@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title data-i18n="booking_title">احجز الآن</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2 data-i18n="booking_title">احجز الآن</h2>
+    <form id="booking-form" class="card">
+      <label>
+        <div data-i18n="first_name">الاسم</div>
+        <input name="first_name" placeholder="الاسم" />
+      </label>
+      <label>
+        <div data-i18n="last_name">اللقب</div>
+        <input name="last_name" placeholder="اللقب" />
+      </label>
+      <label>
+        <div data-i18n="phone">الهاتف</div>
+        <input name="phone" placeholder="+213 ..." />
+      </label>
+      <label>
+        <div data-i18n="select_day">اختر اليوم</div>
+        <input type="date" name="day_date" />
+      </label>
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" type="submit" data-i18n="submit">إرسال</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="/assets/js/app.js"></script>
+</body>
+</html>
