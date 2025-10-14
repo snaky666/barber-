@@ -455,7 +455,7 @@ function renderAccounting(){
       const debtBadge = inc.wasDebt ? '<span class="badge" style="background: rgba(40, 167, 69, 0.8); margin-left: 8px;">Dette payée</span>' : '';
       
       itemsHTML += `
-        <div style="padding: 12px; border-bottom: 1px solid rgba(202, 164, 60, 0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <span style="font-weight: bold;">${inc.clientName}</span>
             <span class="muted" style="margin-left: 10px; font-size: 13px;">${dateStr}</span>
@@ -469,7 +469,7 @@ function renderAccounting(){
     });
     
     monthBlock.innerHTML = `
-      <div style="background: linear-gradient(135deg, rgba(202, 164, 60, 0.2), rgba(169, 135, 50, 0.2)); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <h3 style="color: var(--gold-bright); margin: 0;">📅 ${monthName} ${year}</h3>
           <div style="font-size: 24px; font-weight: bold; color: var(--gold-bright);">
@@ -487,7 +487,7 @@ function renderAccounting(){
   const grandTotal = income.reduce((sum, inc) => sum + inc.amount, 0);
   const totalCard = document.createElement('div');
   totalCard.className = 'card';
-  totalCard.style.background = 'linear-gradient(135deg, rgba(202, 164, 60, 0.3), rgba(169, 135, 50, 0.3))';
+  totalCard.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08))';
   totalCard.style.borderLeft = '4px solid var(--gold-bright)';
   totalCard.innerHTML = `
     <div style="font-size: 22px; font-weight: bold; color: var(--gold-bright); text-align: center;">
@@ -745,7 +745,7 @@ function renderWorkingDaysConfig() {
   workDays.forEach(day => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.style.background = 'rgba(202, 164, 60, 0.05)';
+    card.style.background = 'rgba(255, 255, 255, 0.05)';
     card.style.borderLeft = '3px solid var(--gold1)';
     card.style.marginBottom = '15px';
     

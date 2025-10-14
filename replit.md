@@ -1,9 +1,10 @@
-# Salon de Coiffure - Système de Réservation
+# ⵎⵓⵃⵎⵎⴷ barber shop - Système de Réservation
 
 ## Overview
-This project is a professional hair salon booking management system designed with a modern user interface and interactive 3D background animations. It provides a public booking interface, a client list view, an announcements page, and a comprehensive admin panel. The system is designed for a single-salon operation, focusing on efficient appointment management, client-driven day selection, and a visually engaging user experience. The business vision is to offer a streamlined, visually appealing, and highly functional booking solution for hair salons, enhancing both client interaction and administrative efficiency.
+This project is a professional hair salon booking management system designed with a modern user interface. It provides a public booking interface, a client list view, an announcements page, and a comprehensive admin panel. The system is designed for a single-salon operation, focusing on efficient appointment management, client-driven day selection, and a visually engaging user experience. The business vision is to offer a streamlined, visually appealing, and highly functional booking solution for hair salons, enhancing both client interaction and administrative efficiency.
 
 ## Recent Major Updates (October 2025)
+- **Brand Redesign** (October 14, 2025): Complete visual refresh with modern black & white gradient theme, new logo, updated branding to "ⵎⵓⵃⵎⵎⴷ barber shop"
 - **Replit Environment Setup** (October 13, 2025): Configured Python 3.11 server, workflow, and deployment settings
 - **Configurable Working Days**: Admin can now add, remove, and configure working days dynamically through the admin panel
 - **Per-Day Capacity Management**: Each working day can have its own capacity setting (1-20 clients)
@@ -19,24 +20,26 @@ This project is a professional hair salon booking management system designed wit
 
 ## User Preferences
 - Language: French (fr) with Arabic support
-- Theme: Professional gold on black with modern effects
+- Theme: Modern professional black & white gradient design with smooth animations
 - Database: Supabase (cloud) + localStorage fallback
-- Enhanced with Three.js 3D graphics
+- Branding: ⵎⵓⵃⵎⵎⴷ barber shop
+- Contact: mezrahima@gmail.com | 99 07944451
 
 ## System Architecture
 The application uses a Python server to serve static files and provide API endpoints, with frontend built in HTML, CSS, and Vanilla JavaScript. Data can be stored in both Supabase (cloud database) and localStorage (local fallback).
 
 ### UI/UX Decisions
-- **Theme**: Professional gold-on-black theme with modern effects, gradient animations, smooth transitions, hover effects, and backdrop blur.
-- **3D Background**: Interactive particle system using Three.js with 3000+ golden particles, mouse-following parallax, and smooth rotation. Optimized for performance with WebGL and a graceful fallback.
+- **Theme**: Modern professional black & white design with elegant gradients, smooth transitions, hover effects, and backdrop blur effects.
+- **Color Scheme**: Black primary (#000000), white primary (#ffffff) with sophisticated gradient overlays and subtle lighting effects.
+- **Logo**: Custom animated logo with floating animation and smooth hover interactions.
 - **Responsiveness**: Fully responsive design with a breakpoint at 768px for mobile/desktop. Features a professional hamburger menu for mobile with smooth sliding animations.
-- **Animations**: Incorporates extensive animations including page load fade-in/slide-up, navigation slide-in, card lift/scale on hover, button transitions, and a continuous logo pulse.
+- **Animations**: Includes logo float animation, button hover effects, card elevation on hover, smooth page transitions, and subtle background shifts.
 - **Bilingual Support**: Fully bilingual interface (French/Arabic) with RTL support.
 
 ### Technical Implementations
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+), Three.js for 3D graphics.
-- **Data Storage**: `localStorage` is used for all data persistence, including bookings, admin credentials, announcements, and activity logs.
-- **Admin Panel**: Secured with login credentials (`younes/younes` by default). Provides features for managing bookings (promote, edit, delete, mark "in progress"), cancelling/restoring days, creating announcements, changing admin credentials, and viewing activity.
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+).
+- **Data Storage**: Supabase (cloud PostgreSQL) for primary data persistence with localStorage fallback, including bookings, admin credentials, announcements, and activity logs.
+- **Admin Panel**: Secured with login credentials. Provides features for managing bookings (promote, edit, delete, mark "in progress"), cancelling/restoring days, creating announcements, changing admin credentials, and viewing activity.
 - **Business Logic**:
     - **Working Days**: Configurable by admin (default: Sunday, Tuesday, Thursday, Friday).
     - **Capacity**: Configurable per day by admin (1-20 clients, default: Friday = 3, others = 5).
@@ -51,9 +54,10 @@ The application uses a Python server to serve static files and provide API endpo
 - **Visual Enhancements**: 3D particle background, improved navigation, professional card designs, enhanced form inputs, smooth button animations, responsive modal dialogs, improved tab navigation, and refined typography.
 
 ### System Design Choices
-- **Client-Side Only**: All operations are performed within the browser, leveraging `localStorage` for data persistence. This avoids the need for a separate backend server for core functionality.
-- **Modularity**: Code is organized into `main.js` for application logic and `background3d.js` for Three.js specific code.
-- **Static Assets**: Utilizes standard HTML, CSS, and JavaScript files, making it suitable for static hosting.
+- **Hybrid Architecture**: Python server for static file serving and API endpoints, with Supabase cloud database for data persistence.
+- **Modularity**: Code is organized into separate JavaScript modules for different concerns (Supabase client, data layer, translations, main application logic).
+- **Modern Deployment**: Configured for VM deployment on Replit with automatic workflow management.
 
 ## External Dependencies
-- **Three.js**: Used for creating the interactive 3D particle background animation.
+- **Supabase**: Cloud PostgreSQL database for data persistence and real-time updates.
+- **Three.js**: JavaScript library included for potential future enhancements.
