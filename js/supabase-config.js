@@ -5,8 +5,8 @@ const SUPABASE_CONFIG = {
   // ⚠️ مهم: استبدل هذه القيم بقيم مشروعك من Supabase
   // احصل عليها من: https://app.supabase.com/project/YOUR_PROJECT/settings/api
   
-  url: '',
-  anonKey: '2MzY2Mn0.r29GzVNYpWQsT1JRo_WPt9ZeHuQmz5JLrUwAsaiSZZw',
+  url: 'https://tfbwezlcxecwxrwayhqz.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmYndlemxjeGVjd3hyd2F5aHF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NjcyMzEsImV4cCI6MjA3NjA0MzIzMX0.IC4siEnbvjJZSgOebXA5_C5PH2nzbUM6gmwI05Ta8Mg',
   
   // اسم الجداول في قاعدة البيانات
   tables: {
