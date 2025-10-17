@@ -20,6 +20,15 @@ function ensureDefaults(){
       {dayOfWeek: 6, dayName: 'Samedi', capacity: 5}
     ];
     localStorage.setItem('bp_workdays', JSON.stringify(defaultWorkDays));
+  } else {
+    // إضافة يوم السبت للمستخدمين الحاليين إذا لم يكن موجوداً
+    const workDays = JSON.parse(localStorage.getItem('bp_workdays'));
+    const hasSaturday = workDays.some(d => d.dayOfWeek === 6);
+    if (!hasSaturday) {
+      workDays.push({dayOfWeek: 6, dayName: 'Samedi', capacity: 5});
+      localStorage.setItem('bp_workdays', JSON.stringify(workDays));
+      console.log('✅ تم إضافة يوم السبت إلى أيام العمل');
+    }
   }
 }
 ensureDefaults();
