@@ -916,7 +916,8 @@ function populateAvailableDays() {
   
   workingDays.forEach(dayKey => {
     const dayCapacity = capacity(dayKey);
-    const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey).length;
+    // عد الحجوزات غير المكتملة فقط
+    const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey && !b.completed).length;
     const available = dayCapacity - dayBookingsCount;
     
     if (available > 0) {

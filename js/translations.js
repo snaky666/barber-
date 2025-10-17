@@ -71,9 +71,12 @@ const translations = {
 
         // Days
         'day.sunday': 'Dimanche',
+        'day.monday': 'Lundi',
         'day.tuesday': 'Mardi',
+        'day.wednesday': 'Mercredi',
         'day.thursday': 'Jeudi',
         'day.friday': 'Vendredi',
+        'day.saturday': 'Samedi',
 
         // Contact page
         'contact.title': 'Contactez-nous',
@@ -193,9 +196,12 @@ const translations = {
 
         // Days
         'day.sunday': 'الأحد',
+        'day.monday': 'الاثنين',
         'day.tuesday': 'الثلاثاء',
+        'day.wednesday': 'الأربعاء',
         'day.thursday': 'الخميس',
         'day.friday': 'الجمعة',
+        'day.saturday': 'السبت',
 
         // Contact page
         'contact.title': 'اتصل بنا',
