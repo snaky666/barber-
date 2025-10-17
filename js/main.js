@@ -832,6 +832,12 @@ function addWorkingDay() {
   renderWorkingDaysConfig();
   renderAdminDays();
   renderList();
+  
+  // تحديث قائمة الأيام في صفحة الحجز إذا كانت موجودة
+  if (typeof populateAvailableDays === 'function') {
+    populateAvailableDays();
+  }
+  
   alert(`✅ ${dayNames[dayNum]} ajouté avec succès!`);
 }
 
@@ -855,6 +861,12 @@ function removeWorkingDay(dayOfWeek) {
   renderWorkingDaysConfig();
   renderAdminDays();
   renderList();
+  
+  // تحديث قائمة الأيام في صفحة الحجز إذا كانت موجودة
+  if (typeof populateAvailableDays === 'function') {
+    populateAvailableDays();
+  }
+  
   alert(`✅ ${dayNames[dayOfWeek]} supprimé!`);
 }
 
@@ -880,8 +892,49 @@ function editDayCapacity(dayOfWeek) {
   renderWorkingDaysConfig();
   renderAdminDays();
   renderList();
+  
+  // تحديث قائمة الأيام في صفحة الحجز إذا كانت موجودة
+  if (typeof populateAvailableDays === 'function') {
+    populateAvailableDays();
+  }
+  
   alert('✅ ' + (typeof t === 'function' ? t('workdays.updated') : 'Capacité mise à jour') + ': ' + cap + ' ' + (typeof t === 'function' ? t('workdays.clients') : 'clients'));
 }
 
+// ملء قائمة الأيام المتاحة في صفحة الحجز
+function populateAvailableDays() {
+  const select = document.getElementById('daySelect');
+  if (!select) return;
+  
+  // مسح الخيارات الحالية (ماعدا الأولى)
+  while (select.options.length > 1) {
+    select.remove(1);
+  }
+  
+  const workingDays = getWorkingDays(60); // الأيام الـ60 القادمة
+  const bookings = load(LS_KEYS.BOOK);
+  
+  workingDays.forEach(dayKey => {
+    const dayCapacity = capacity(dayKey);
+    const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey).length;
+    const available = dayCapacity - dayBookingsCount;
+    
+    if (available > 0) {
+      const option = document.createElement('option');
+      option.value = dayKey;
+      option.textContent = `${dayLabelFromKey(dayKey)} (${available} place${available > 1 ? 's' : ''} disponible${available > 1 ? 's' : ''})`;
+      select.appendChild(option);
+    }
+  });
+  
+  if (select.options.length === 1) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Aucun jour disponible pour le moment';
+    option.disabled = true;
+    select.appendChild(option);
+  }
+}
+
 // initial renderers for pages
-window.addEventListener('DOMContentLoaded', ()=>{ cleanPastDays(); renderList(); renderAnnonces(); setupTabs(); try{ renderCancelledDays(); renderAdminDays(); renderAdminAnns(); renderDebts(); renderAccounting(); renderWorkingDaysConfig(); populateDaySelect(); }catch(e){} });
+window.addEventListener('DOMContentLoaded', ()=>{ cleanPastDays(); renderList(); renderAnnonces(); setupTabs(); try{ renderCancelledDays(); renderAdminDays(); renderAdminAnns(); renderDebts(); renderAccounting(); renderWorkingDaysConfig(); populateDaySelect(); populateAvailableDays(); }catch(e){} });

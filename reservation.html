@@ -112,44 +112,11 @@
 </div>
 
 <script>
-// ملء قائمة الأيام المتاحة عند تحميل الصفحة
-function populateAvailableDays() {
-  const select = document.getElementById('daySelect');
-  if (!select) return;
-  
-  // مسح الخيارات الحالية (ماعدا الأولى)
-  while (select.options.length > 1) {
-    select.remove(1);
-  }
-  
-  const workingDays = getWorkingDays(60); // الأيام الـ60 القادمة
-  const bookings = load(LS_KEYS.BOOK);
-  
-  workingDays.forEach(dayKey => {
-    const dayCapacity = capacity(dayKey);
-    const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey).length;
-    const available = dayCapacity - dayBookingsCount;
-    
-    if (available > 0) {
-      const option = document.createElement('option');
-      option.value = dayKey;
-      option.textContent = `${dayLabelFromKey(dayKey)} (${available} place${available > 1 ? 's' : ''} disponible${available > 1 ? 's' : ''})`;
-      select.appendChild(option);
-    }
-  });
-  
-  if (select.options.length === 1) {
-    const option = document.createElement('option');
-    option.value = '';
-    option.textContent = 'Aucun jour disponible pour le moment';
-    option.disabled = true;
-    select.appendChild(option);
-  }
-}
-
 // تحديث القائمة عند تحميل الصفحة
 window.addEventListener('DOMContentLoaded', () => {
-  populateAvailableDays();
+  if (typeof populateAvailableDays === 'function') {
+    populateAvailableDays();
+  }
 });
 
 // إرسال النموذج
@@ -165,7 +132,9 @@ document.getElementById('resForm').addEventListener('submit', function(e){
   
   if (success) {
     this.reset();
-    populateAvailableDays(); // تحديث القائمة
+    if (typeof populateAvailableDays === 'function') {
+      populateAvailableDays();
+    }
     renderList();
   }
 });
