@@ -1,3 +1,4 @@
+
 // js/supabase-config.js
 // إعدادات الاتصال بقاعدة بيانات Supabase
 
