@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Salon - Réservation</title>
+<link rel="stylesheet" href="css/style.css">
+<!-- Supabase Client Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- تحميل ملفات المشروع بالترتيب الصحيح -->
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/data-layer.js"></script>
+<script src="js/translations.js" defer></script>
+<script src="js/main.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <img class="logo" src="logo.png" alt="logo" onclick="openLoginModal()">
+  
+  <nav class="nav">
+    <a href="annoncent.html"><span data-i18n="nav.announcements">Annonces</span></a>
+    <a href="reservation.html"><span data-i18n="nav.reservation">Réservation</span></a>
+    <a href="list.html"><span data-i18n="nav.list">Liste</span></a>
+    <a href="contact.html"><span data-i18n="nav.contact">Contact</span></a>
+  </nav>
+  
+  <div style="display: flex; gap: 10px; align-items: center; margin-left: auto;">
+    <button id="langToggle" onclick="toggleLanguage()" class="lang-btn" style="padding: 8px 12px; font-size: 14px;">العربية</button>
+  </div>
+  
+  <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu">
+  <nav class="mobile-nav">
+    <a href="annoncent.html" onclick="closeMobileMenu()">
+      <span>📢</span>
+      <span data-i18n="nav.announcements">Annonces</span>
+    </a>
+    <a href="reservation.html" onclick="closeMobileMenu()">
+      <span>📅</span>
+      <span data-i18n="nav.reservation">Réservation</span>
+    </a>
+    <a href="list.html" onclick="closeMobileMenu()">
+      <span>📋</span>
+      <span data-i18n="nav.list">Liste</span>
+    </a>
+    <a href="contact.html" onclick="closeMobileMenu()">
+      <span>📞</span>
+      <span data-i18n="nav.contact">Contact</span>
+    </a>
+  </nav>
+  
+  <div class="mobile-lang-section">
+    <button id="mobileLangToggle" onclick="toggleLanguage(); closeMobileMenu();" class="mobile-lang-btn">
+      <span>🌐</span>
+      <span>العربية</span>
+    </button>
+  </div>
+</div>
+
+<main class="container">
+  <section class="card hero">
+    <h1 data-i18n="reservation.title">Réservation</h1>
+    <p class="lead" data-i18n="reservation.subtitle">Réservez facilement — téléphone optionnel.</p>
+  </section>
+
+  <section class="card">
+    <form id="resForm" class="form">
+      <label data-i18n="reservation.name">Nom *</label>
+      <input id="name" required>
+      <label data-i18n="reservation.surname">Prénom *</label>
+      <input id="surname" required>
+      <label data-i18n="reservation.phone">Téléphone (optionnel)</label>
+      <input id="phone" data-i18n="reservation.phone.placeholder" placeholder="Laisser vide si vous préférez">
+      <label>Choisir le jour *</label>
+      <select id="daySelect" required style="width: 100%; padding: 12px; border: 1px solid rgba(202, 164, 60, 0.3); border-radius: 8px; background: rgba(0,0,0,0.3); color: var(--gold1); font-size: 15px; margin-bottom: 16px;">
+        <option value="">-- Sélectionner un jour --</option>
+      </select>
+      <div class="actions">
+        <button type="submit"><span data-i18n="reservation.button">Réserver</span></button>
+      </div>
+      <p id="resInfo" class="muted" style="margin-top: 16px;"></p>
+    </form>
+  </section>
+</main>
+
+<div id="loginModal" class="modal hidden">
+  <div class="modal-content card">
+    <h3 style="color: var(--gold-bright); margin-bottom: 20px;" data-i18n="login.title">Connexion Coiffeur</h3>
+    <form onsubmit="event.preventDefault(); doModalLogin();">
+      <label data-i18n="login.username">Nom d'utilisateur</label>
+      <input id="modalUser" autocomplete="username">
+      <label data-i18n="login.password">Mot de passe</label>
+      <input id="modalPass" type="password" autocomplete="current-password">
+      <div class="actions" style="margin-top: 20px;">
+        <button type="submit"><span data-i18n="login.submit">Se connecter</span></button>
+        <button type="button" onclick="closeLoginModal()" style="background: rgba(255,255,255,0.1); color: var(--muted); margin-left: 10px;"><span data-i18n="login.close">Fermer</span></button>
+      </div>
+    </form>
+    <p id="modalMsg" class="muted" style="margin-top: 12px;"></p>
+  </div>
+</div>
+
+<script>
+// ملء قائمة الأيام المتاحة عند تحميل الصفحة
+function populateAvailableDays() {
+  const select = document.getElementById('daySelect');
+  if (!select) return;
+  
+  // مسح الخيارات الحالية (ماعدا الأولى)
+  while (select.options.length > 1) {
+    select.remove(1);
+  }
+  
+  const workingDays = getWorkingDays(60); // الأيام الـ60 القادمة
+  const bookings = load(LS_KEYS.BOOK);
+  
+  workingDays.forEach(dayKey => {
+    const dayCapacity = capacity(dayKey);
+    const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey).length;
+    const available = dayCapacity - dayBookingsCount;
+    
+    if (available > 0) {
+      const option = document.createElement('option');
+      option.value = dayKey;
+      option.textContent = `${dayLabelFromKey(dayKey)} (${available} place${available > 1 ? 's' : ''} disponible${available > 1 ? 's' : ''})`;
+      select.appendChild(option);
+    }
+  });
+  
+  if (select.options.length === 1) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Aucun jour disponible pour le moment';
+    option.disabled = true;
+    select.appendChild(option);
+  }
+}
+
+// تحديث القائمة عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', () => {
+  populateAvailableDays();
+});
+
+// إرسال النموذج
+document.getElementById('resForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  
+  const name = document.getElementById('name').value.trim();
+  const surname = document.getElementById('surname').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const selectedDay = document.getElementById('daySelect').value;
+  
+  const success = addBooking(name, surname, phone, selectedDay);
+  
+  if (success) {
+    this.reset();
+    populateAvailableDays(); // تحديث القائمة
+    renderList();
+  }
+});
+</script>
+</body>
+</html>

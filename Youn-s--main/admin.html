@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Salon - Administration</title>
+<link rel="stylesheet" href="css/style.css">
+<!-- Supabase Client Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- تحميل ملفات المشروع بالترتيب الصحيح -->
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/data-layer.js"></script>
+<script src="js/translations.js" defer></script>
+<script src="js/main.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <img class="logo" src="logo.png" alt="logo" onclick="openLoginModal()">
+  
+  <nav class="nav">
+    <a href="annoncent.html"><span data-i18n="nav.announcements">Annonces</span></a>
+    <a href="reservation.html"><span data-i18n="nav.reservation">Réservation</span></a>
+    <a href="list.html"><span data-i18n="nav.list">Liste</span></a>
+    <a href="contact.html"><span data-i18n="nav.contact">Contact</span></a>
+  </nav>
+  
+  <div style="display: flex; gap: 10px; align-items: center; margin-left: auto;">
+    <button id="langToggle" onclick="toggleLanguage()" class="lang-btn" style="padding: 8px 12px; font-size: 14px;">العربية</button>
+  </div>
+  
+  <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu">
+  <nav class="mobile-nav">
+    <a href="annoncent.html" onclick="closeMobileMenu()">
+      <span>📢</span>
+      <span data-i18n="nav.announcements">Annonces</span>
+    </a>
+    <a href="reservation.html" onclick="closeMobileMenu()">
+      <span>📅</span>
+      <span data-i18n="nav.reservation">Réservation</span>
+    </a>
+    <a href="list.html" onclick="closeMobileMenu()">
+      <span>📋</span>
+      <span data-i18n="nav.list">Liste</span>
+    </a>
+    <a href="contact.html" onclick="closeMobileMenu()">
+      <span>📞</span>
+      <span data-i18n="nav.contact">Contact</span>
+    </a>
+  </nav>
+  
+  <div class="mobile-lang-section">
+    <button id="mobileLangToggle" onclick="toggleLanguage(); closeMobileMenu();" class="mobile-lang-btn">
+      <span>🌐</span>
+      <span>العربية</span>
+    </button>
+  </div>
+</div>
+
+<main class="container">
+  <section class="card hero">
+    <h1 data-i18n="admin.title">Administration</h1>
+    <p class="lead" data-i18n="admin.subtitle">Ouvrez la modal via le logo pour vous connecter.</p>
+  </section>
+
+  <section id="adminArea" class="card hidden">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-res"><span data-i18n="admin.tab.bookings">Gestion réservations</span></button>
+      <button class="tab-btn" data-tab="tab-workdays"><span data-i18n="workdays.title">📅 Jours de travail</span></button>
+      <button class="tab-btn" data-tab="tab-accounting"><span data-i18n="admin.tab.accounting">💰 Comptabilité</span></button>
+      <button class="tab-btn" data-tab="tab-debts"><span data-i18n="admin.tab.debts">📝 Dettes</span></button>
+      <button class="tab-btn" data-tab="tab-ann"><span data-i18n="admin.tab.announcements">Annonces</span></button>
+      <button class="tab-btn" data-tab="tab-params"><span data-i18n="admin.tab.settings">Paramètres</span></button>
+      <button class="tab-btn" data-tab="tab-journal"><span data-i18n="admin.tab.journal">Journal</span></button>
+    </div>
+
+    <div id="tab-res" class="tab panel">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;" data-i18n="admin.bookings.title">Réservations par jour</h3>
+      
+      <div id="cancelledDays" style="margin-bottom: 30px;"></div>
+      
+      <div id="adminDays"></div>
+    </div>
+
+    <div id="tab-workdays" class="tab panel hidden">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;"><span data-i18n="workdays.config">📅 Configuration des jours de travail</span></h3>
+      <p class="muted" style="margin-bottom: 20px;" data-i18n="workdays.manage">Gérez les jours d'ouverture du salon et la capacité de chaque jour.</p>
+      
+      <div style="margin-bottom: 25px;">
+        <button onclick="addWorkingDay()" style="background: rgba(40, 167, 69, 0.8); padding: 12px 24px; font-size: 16px;">
+          <span data-i18n="workdays.add">➕ Ajouter un jour de travail</span>
+        </button>
+      </div>
+      
+      <div id="workingDaysList"></div>
+    </div>
+
+    <div id="tab-accounting" class="tab panel hidden">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;" data-i18n="admin.accounting.title">💰 Comptabilité mensuelle</h3>
+      <div id="accountingList"></div>
+    </div>
+
+    <div id="tab-debts" class="tab panel hidden">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;" data-i18n="admin.debts.title">📝 Liste des dettes</h3>
+      <div id="debtsList"></div>
+    </div>
+
+    <div id="tab-ann" class="tab panel hidden">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;" data-i18n="admin.announcements.title">Annonces (créées par le coiffeur)</h3>
+      <form onsubmit="event.preventDefault(); createAnnonce();">
+        <textarea id="annText" data-i18n="admin.announcements.placeholder" placeholder="Titre / message..."></textarea>
+        <div class="actions">
+          <button type="submit"><span data-i18n="admin.announcements.publish">Publier annonce</span></button>
+        </div>
+      </form>
+      <div id="adminAnns" style="margin-top: 20px;"></div>
+    </div>
+
+    <div id="tab-params" class="tab panel hidden">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;" data-i18n="admin.settings.title">Paramètres</h3>
+      <form onsubmit="event.preventDefault(); changeCredentials();">
+        <label data-i18n="admin.settings.user">Nouvel utilisateur</label>
+        <input id="newUser" autocomplete="username">
+        <label data-i18n="admin.settings.password">Nouveau mot de passe</label>
+        <input id="newPass" type="password" autocomplete="new-password">
+        <div class="actions">
+          <button type="submit"><span data-i18n="admin.settings.update">Mettre à jour</span></button>
+          <button type="button" onclick="resetAll()" style="background: rgba(220, 53, 69, 0.8); margin-left: 10px;"><span data-i18n="admin.settings.reset">Réinitialiser tout</span></button>
+        </div>
+      </form>
+    </div>
+
+    <div id="tab-journal" class="tab panel hidden">
+      <h3 style="color: var(--gold1); margin-bottom: 20px;" data-i18n="admin.journal.title">Journal interne</h3>
+      <div id="journalList"></div>
+    </div>
+  </section>
+</main>
+
+<div id="loginModal" class="modal hidden">
+  <div class="modal-content card">
+    <h3 style="color: var(--gold-bright); margin-bottom: 20px;" data-i18n="login.title">Connexion Coiffeur</h3>
+    <form onsubmit="event.preventDefault(); doModalLogin();">
+      <label data-i18n="login.username">Nom d'utilisateur</label>
+      <input id="modalUser" autocomplete="username">
+      <label data-i18n="login.password">Mot de passe</label>
+      <input id="modalPass" type="password" autocomplete="current-password">
+      <div class="actions" style="margin-top: 20px;">
+        <button type="submit"><span data-i18n="login.submit">Se connecter</span></button>
+        <button type="button" onclick="closeLoginModal()" style="background: rgba(255,255,255,0.1); color: var(--muted); margin-left: 10px;"><span data-i18n="login.close">Fermer</span></button>
+      </div>
+    </form>
+    <p id="modalMsg" class="muted" style="margin-top: 12px;"></p>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  // Check if user is logged in via sessionStorage
+  if (sessionStorage.getItem('admin_logged_in') === 'true') {
+    activateAdminArea();
+  }
+});
+</script>
+</body>
+</html>
