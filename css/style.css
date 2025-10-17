@@ -1,13 +1,13 @@
-/* css/style.css - Enhanced professional gold theme with modern effects */
+/* css/style.css - Professional charcoal and red theme with modern effects */
 :root{
-  --bg1:#050505;
-  --bg2:#0d0d0f;
-  --gold1:#caa43c;
-  --gold2:#8b6a2f;
-  --gold-bright:#e8c468;
-  --muted: rgba(255,255,255,0.7);
-  --card: rgba(255,255,255,0.05);
-  --card-hover: rgba(255,255,255,0.08);
+  --bg1:#1a1a1a;
+  --bg2:#2C2C2C;
+  --primary:#A41E1E;
+  --primary-dark:#7a1616;
+  --accent:#D9D9D9;
+  --muted: rgba(217,217,217,0.7);
+  --card: rgba(44,44,44,0.6);
+  --card-hover: rgba(44,44,44,0.8);
 }
 
 * {
@@ -34,8 +34,8 @@ body::before {
   inset: 0;
   pointer-events: none;
   background: 
-    radial-gradient(circle at 20% 50%, rgba(202, 164, 60, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(139, 106, 47, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(164, 30, 30, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(217, 217, 217, 0.05) 0%, transparent 50%);
   z-index: 1;
 }
 
@@ -48,7 +48,7 @@ body::before {
   gap: 16px;
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(202, 164, 60, 0.2);
+  border-bottom: 1px solid rgba(164, 30, 30, 0.3);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -74,14 +74,14 @@ body::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--gold1), var(--gold2));
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .nav a:hover {
-  color: #0b0b0b;
-  border-color: var(--gold1);
+  color: #fff;
+  border-color: var(--primary);
   transform: translateY(-2px);
 }
 
@@ -99,23 +99,23 @@ body::before {
   height: 80px;
   cursor: pointer;
   border-radius: 15px;
-  background: linear-gradient(135deg, var(--gold-bright), var(--gold2));
+  background: var(--bg2);
   display: block;
   object-fit: cover;
-  box-shadow: 0 8px 30px rgba(202, 164, 60, 0.4);
+  box-shadow: 0 8px 30px rgba(164, 30, 30, 0.4);
   transition: all 0.3s ease;
-  border: 2px solid rgba(202, 164, 60, 0.3);
+  border: 2px solid rgba(164, 30, 30, 0.3);
 }
 
 .logo:hover {
   transform: scale(1.05) rotate(5deg);
-  box-shadow: 0 12px 40px rgba(202, 164, 60, 0.6);
+  box-shadow: 0 12px 40px rgba(164, 30, 30, 0.6);
 }
 
 .lang-btn {
-  background: rgba(202, 164, 60, 0.2);
-  border: 1px solid rgba(202, 164, 60, 0.4);
-  color: var(--gold-bright);
+  background: rgba(164, 30, 30, 0.2);
+  border: 1px solid rgba(164, 30, 30, 0.4);
+  color: var(--accent);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -128,8 +128,8 @@ body::before {
 }
 
 .lang-btn:hover {
-  background: linear-gradient(135deg, var(--gold-bright), var(--gold2));
-  color: #0b0b0b;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
   transform: translateY(-2px);
 }
 
@@ -155,7 +155,7 @@ body::before {
     0 10px 40px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(202, 164, 60, 0.15);
+  border: 1px solid rgba(164, 30, 30, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -168,15 +168,15 @@ body::before {
 }
 
 .hero {
-  background: linear-gradient(135deg, rgba(202, 164, 60, 0.1), rgba(139, 106, 47, 0.05));
-  border: 2px solid rgba(202, 164, 60, 0.3);
+  background: linear-gradient(135deg, rgba(164, 30, 30, 0.2), rgba(44, 44, 44, 0.3));
+  border: 2px solid rgba(164, 30, 30, 0.4);
 }
 
 .hero h1 {
   margin: 0;
   font-size: 36px;
-  color: var(--gold-bright);
-  text-shadow: 0 2px 10px rgba(202, 164, 60, 0.5);
+  color: var(--accent);
+  text-shadow: 0 2px 10px rgba(164, 30, 30, 0.5);
   font-weight: 800;
   letter-spacing: -0.5px;
 }
@@ -191,7 +191,7 @@ body::before {
 label {
   display: block;
   margin-top: 16px;
-  color: var(--gold-bright);
+  color: var(--accent);
   font-weight: 600;
   font-size: 14px;
   margin-bottom: 8px;
@@ -201,8 +201,8 @@ input, textarea, select {
   width: 100%;
   padding: 12px 16px;
   border-radius: 10px;
-  border: 1px solid rgba(202, 164, 60, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(164, 30, 30, 0.3);
+  background: rgba(44, 44, 44, 0.5);
   color: #fff;
   font-size: 15px;
   transition: all 0.3s ease;
@@ -210,9 +210,9 @@ input, textarea, select {
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--gold1);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 20px rgba(202, 164, 60, 0.3);
+  border-color: var(--primary);
+  background: rgba(44, 44, 44, 0.7);
+  box-shadow: 0 0 20px rgba(164, 30, 30, 0.4);
 }
 
 textarea {
@@ -227,16 +227,16 @@ textarea {
 }
 
 button {
-  background: linear-gradient(135deg, var(--gold-bright), var(--gold2));
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border: none;
   padding: 12px 24px;
   border-radius: 10px;
-  color: #0b0b0b;
+  color: #fff;
   cursor: pointer;
   font-weight: 700;
   font-size: 15px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(202, 164, 60, 0.4);
+  box-shadow: 0 4px 15px rgba(164, 30, 30, 0.4);
   position: relative;
   overflow: hidden;
 }
@@ -245,14 +245,14 @@ button::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--gold1), var(--gold-bright));
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(202, 164, 60, 0.6);
+  box-shadow: 0 6px 25px rgba(164, 30, 30, 0.6);
 }
 
 button:hover::before {
@@ -272,14 +272,14 @@ button span {
   margin-bottom: 20px;
   border-radius: 15px;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.05));
-  border: 1px solid rgba(202, 164, 60, 0.2);
+  background: linear-gradient(135deg, rgba(44, 44, 44, 0.4), rgba(26, 26, 26, 0.6));
+  border: 1px solid rgba(164, 30, 30, 0.3);
   transition: all 0.3s ease;
 }
 
 .day-block:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.03));
-  border-color: var(--gold1);
+  background: linear-gradient(135deg, rgba(44, 44, 44, 0.6), rgba(26, 26, 26, 0.4));
+  border-color: var(--primary);
 }
 
 .day-title {
@@ -288,7 +288,7 @@ button span {
   align-items: center;
   margin-bottom: 12px;
   font-weight: 800;
-  color: var(--gold1);
+  color: var(--accent);
   font-size: 18px;
 }
 
@@ -304,7 +304,7 @@ button span {
 }
 
 .client-row:hover {
-  background: rgba(202, 164, 60, 0.1);
+  background: rgba(164, 30, 30, 0.2);
   transform: translateX(5px);
 }
 
@@ -404,8 +404,8 @@ button span {
 .tab-btn {
   padding: 12px 20px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(202, 164, 60, 0.2);
+  background: rgba(44, 44, 44, 0.5);
+  border: 1px solid rgba(164, 30, 30, 0.3);
   color: var(--muted);
   cursor: pointer;
   font-weight: 700;
@@ -418,19 +418,19 @@ button span {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--gold1), var(--gold2));
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .tab-btn:hover {
-  border-color: var(--gold1);
+  border-color: var(--primary);
   transform: translateY(-2px);
 }
 
 .tab-btn.active {
-  color: #0b0b0b;
-  border-color: var(--gold1);
+  color: #fff;
+  border-color: var(--primary);
 }
 
 .tab-btn.active::before {
@@ -505,8 +505,8 @@ button span {
 }
 
 .contact-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(202, 164, 60, 0.2);
+  background: rgba(44, 44, 44, 0.5);
+  border: 1px solid rgba(164, 30, 30, 0.3);
   border-radius: 15px;
   padding: 25px;
   text-align: center;
@@ -514,10 +514,10 @@ button span {
 }
 
 .contact-item:hover {
-  background: rgba(202, 164, 60, 0.1);
-  border-color: var(--gold1);
+  background: rgba(164, 30, 30, 0.2);
+  border-color: var(--primary);
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(202, 164, 60, 0.3);
+  box-shadow: 0 10px 30px rgba(164, 30, 30, 0.4);
 }
 
 .contact-icon {
@@ -527,7 +527,7 @@ button span {
 }
 
 .contact-item h3 {
-  color: var(--gold-bright);
+  color: var(--accent);
   font-size: 18px;
   margin-bottom: 12px;
   font-weight: 600;
@@ -543,7 +543,7 @@ button span {
 }
 
 .contact-link:hover {
-  color: var(--gold-bright);
+  color: var(--primary);
   transform: scale(1.05);
 }
 
@@ -566,8 +566,8 @@ button span {
   align-items: center;
   gap: 12px;
   padding: 15px 25px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(202, 164, 60, 0.3);
+  background: rgba(44, 44, 44, 0.5);
+  border: 1px solid rgba(164, 30, 30, 0.3);
   border-radius: 12px;
   color: #fff;
   text-decoration: none;
@@ -580,7 +580,7 @@ button span {
 
 .social-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(202, 164, 60, 0.4);
+  box-shadow: 0 8px 25px rgba(164, 30, 30, 0.4);
 }
 
 .social-btn.facebook {
@@ -706,7 +706,7 @@ button span {
   }
   
   .tabs::-webkit-scrollbar-thumb {
-    background: var(--gold1);
+    background: var(--primary);
     border-radius: 3px;
   }
   
