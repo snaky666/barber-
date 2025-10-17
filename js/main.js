@@ -832,11 +832,7 @@ function addWorkingDay() {
   renderWorkingDaysConfig();
   renderAdminDays();
   renderList();
-  
-  // تحديث قائمة الأيام في صفحة الحجز إذا كانت موجودة
-  if (typeof populateAvailableDays === 'function') {
-    populateAvailableDays();
-  }
+  populateAvailableDays();
   
   alert(`✅ ${dayNames[dayNum]} ajouté avec succès!`);
 }
@@ -861,11 +857,7 @@ function removeWorkingDay(dayOfWeek) {
   renderWorkingDaysConfig();
   renderAdminDays();
   renderList();
-  
-  // تحديث قائمة الأيام في صفحة الحجز إذا كانت موجودة
-  if (typeof populateAvailableDays === 'function') {
-    populateAvailableDays();
-  }
+  populateAvailableDays();
   
   alert(`✅ ${dayNames[dayOfWeek]} supprimé!`);
 }
@@ -892,13 +884,35 @@ function editDayCapacity(dayOfWeek) {
   renderWorkingDaysConfig();
   renderAdminDays();
   renderList();
-  
-  // تحديث قائمة الأيام في صفحة الحجز إذا كانت موجودة
-  if (typeof populateAvailableDays === 'function') {
-    populateAvailableDays();
-  }
+  populateAvailableDays();
   
   alert('✅ ' + (typeof t === 'function' ? t('workdays.updated') : 'Capacité mise à jour') + ': ' + cap + ' ' + (typeof t === 'function' ? t('workdays.clients') : 'clients'));
+}
+
+// حفظ أيام العمل في Supabase
+async function saveWorkDaysToSupabase() {
+  const workDays = getConfiguredWorkDays();
+  try {
+    const client = window.supabaseClient;
+    if (!client) return;
+    
+    // حذف جميع أيام العمل القديمة
+    await client.from('work_days').delete().neq('id', '');
+    
+    // إضافة أيام العمل الجديدة
+    if (workDays.length > 0) {
+      const data = workDays.map(w => ({
+        day_of_week: w.dayOfWeek,
+        day_name: w.dayName,
+        capacity: w.capacity
+      }));
+      await client.from('work_days').insert(data);
+    }
+    
+    console.log('💾 تم حفظ أيام العمل في Supabase');
+  } catch (error) {
+    console.error('خطأ في حفظ أيام العمل:', error);
+  }
 }
 
 // ملء قائمة الأيام المتاحة في صفحة الحجز
