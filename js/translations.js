@@ -211,7 +211,7 @@ const translations = {
         'contact.email': 'البريد الإلكتروني',
         'contact.address': 'العنوان',
         'contact.hours': 'أوقات العمل',
-        'contact.hours.detail': 'الأحد، الثلاثاء، الخميس، الجمعة',
+        'contact.hours.detail': 'الأحد، الثلاثاء، الخميس، الجمعة، السبت',
         'contact.social': 'وسائل التواصل الاجتماعي',
         'contact.facebook': 'فيسبوك',
         'contact.instagram': 'إنستغرام',
