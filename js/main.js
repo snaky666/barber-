@@ -16,7 +16,8 @@ function ensureDefaults(){
       {dayOfWeek: 0, dayName: 'Dimanche', capacity: 5},
       {dayOfWeek: 2, dayName: 'Mardi', capacity: 5},
       {dayOfWeek: 4, dayName: 'Jeudi', capacity: 5},
-      {dayOfWeek: 5, dayName: 'Vendredi', capacity: 3}
+      {dayOfWeek: 5, dayName: 'Vendredi', capacity: 3},
+      {dayOfWeek: 6, dayName: 'Samedi', capacity: 5}
     ];
     localStorage.setItem('bp_workdays', JSON.stringify(defaultWorkDays));
   }
