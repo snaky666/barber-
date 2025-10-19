@@ -134,32 +134,31 @@ window.addEventListener('DOMContentLoaded', async () => {
       populateAvailableDays();
     }
   }, 500);
-});
-</script>
+  
+  // إرسال النموذج
+  document.getElementById('resForm').addEventListener('submit', function(e){
+    e.preventDefault();
 
-// إرسال النموذج
-document.getElementById('resForm').addEventListener('submit', function(e){
-  e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const surname = document.getElementById('surname').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const selectedDay = document.getElementById('daySelect').value;
 
-  const name = document.getElementById('name').value.trim();
-  const surname = document.getElementById('surname').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const selectedDay = document.getElementById('daySelect').value;
-
-  if(!selectedDay){
-    alert('الرجاء اختيار يوم للحجز');
-    return;
-  }
-
-  const success = addBooking(name, surname, phone, selectedDay);
-
-  if (success) {
-    this.reset();
-    if (typeof populateAvailableDays === 'function') {
-      populateAvailableDays();
+    if(!selectedDay){
+      alert('الرجاء اختيار يوم للحجز');
+      return;
     }
-    renderList();
-  }
+
+    const success = addBooking(name, surname, phone, selectedDay);
+
+    if (success) {
+      this.reset();
+      if (typeof populateAvailableDays === 'function') {
+        populateAvailableDays();
+      }
+      renderList();
+    }
+  });
 });
 </script>
 </body>
