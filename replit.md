@@ -4,6 +4,13 @@
 This project is a professional hair salon booking management system designed with a modern user interface and interactive 3D background animations. It provides a public booking interface, a client list view, an announcements page, and a comprehensive admin panel. The system is designed for a single-salon operation, focusing on efficient appointment management, client-driven day selection, and a visually engaging user experience. The business vision is to offer a streamlined, visually appealing, and highly functional booking solution for hair salons, enhancing both client interaction and administrative efficiency.
 
 ## Recent Major Updates (October 2025)
+- **Complete Supabase Integration** (October 19, 2025): Full cloud database integration with automated synchronization
+  - Created `supabase-config.js`, `supabase-client.js`, and updated `data-layer.js` for Supabase
+  - All data (bookings, announcements, journal, income, debt, workdays, cancelled days) now stored in Supabase
+  - Admin credentials remain in localStorage for security
+  - Field name conversion (camelCase ↔ snake_case) handled automatically
+  - Two SQL schema versions: basic (`SQL_FOR_SUPABASE.sql`) and secure (`SQL_FOR_SUPABASE_SECURE.sql`)
+  - Comprehensive migration instructions provided in `SUPABASE_MIGRATION_INSTRUCTIONS.md`
 - **GitHub Import to Replit** (October 17, 2025): Successfully imported from GitHub, configured Python 3.11, Node.js 20, and Three.js dependencies
 - **Replit Environment Setup** (October 17, 2025): Configured Python 3.11 server, workflow, and VM deployment settings
 - **Configurable Working Days**: Admin can now add, remove, and configure working days dynamically through the admin panel
@@ -42,8 +49,17 @@ The application uses a Python server to serve static files and provide API endpo
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+), Three.js for 3D graphics.
 - **Backend**: Python 3.11 HTTP server (server.py) serving static files and providing REST API endpoints for data synchronization
 - **Data Storage**: 
-  - Supabase (cloud PostgreSQL) for shared data: bookings, announcements, journal, income, debt
-  - localStorage for local settings: admin credentials, working days configuration, language preference
+  - **Supabase (cloud PostgreSQL)**: Primary storage for all shared data
+    - Bookings, announcements, journal, income, debt, workdays, cancelled days
+    - Real-time synchronization across devices and sessions
+    - Field mapping: camelCase (JavaScript) ↔ snake_case (database) handled automatically
+  - **localStorage**: Local settings only
+    - Admin credentials (for security - never sent to cloud)
+    - Language preference
+- **Security**:
+  - Two security levels available via different SQL scripts
+  - Basic: Full access (for private use)
+  - Secure: Read-only public access (requires Supabase Dashboard for admin operations)
 - **Admin Panel**: Secured with login credentials (`younes/younes` by default). Provides features for managing bookings (promote, edit, delete, mark "in progress"), cancelling/restoring days, creating announcements, changing admin credentials, and viewing activity.
 - **Business Logic**:
     - **Working Days**: Configurable by admin (default: Sunday, Tuesday, Thursday, Friday).

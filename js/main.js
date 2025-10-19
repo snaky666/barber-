@@ -653,7 +653,7 @@ function cleanPastDays(){
   today.setHours(0, 0, 0, 0);
   const todayKey = dayKeyFromDate(today);
   
-  let bks = load(LS_KEYS.BOOK);
+  let bks = load(LS_KEYS.BOOK) || [];
   const removed = bks.filter(x => x.dayKey < todayKey);
   
   if(removed.length > 0){
@@ -663,7 +663,7 @@ function cleanPastDays(){
   }
   
   // clean cancelled days that are in the past
-  let cancelled = load(LS_KEYS.CAN);
+  let cancelled = load(LS_KEYS.CAN) || [];
   const removedCancelled = cancelled.filter(x => x.dayKey < todayKey);
   
   if(removedCancelled.length > 0){
