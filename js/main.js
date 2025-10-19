@@ -142,9 +142,32 @@ function addBooking(name, surname, phone, selectedDayKey){
 // RENDER PUBLIC LIST grouped by day, show En cours badge (hide completed)
 function renderList(){
   const container=document.getElementById('publicDays'); if(!container) return;
-  const bks = load(LS_KEYS.BOOK).filter(x => !x.completed).slice().sort((a,b)=> a.dayKey.localeCompare(b.dayKey) || a.createdAt.localeCompare(b.createdAt));
+  
+  const allBookings = load(LS_KEYS.BOOK) || [];
+  console.log('📋 عدد جميع الحجوزات:', allBookings.length);
+  
+  const bks = allBookings.filter(x => !x.completed).slice().sort((a,b)=> a.dayKey.localeCompare(b.dayKey) || a.createdAt.localeCompare(b.createdAt));
+  console.log('📋 عدد الحجوزات غير المكتملة:', bks.length);
+  
   const days = [...new Set(bks.map(x=>x.dayKey))];
   container.innerHTML='';
+  
+  if(days.length===0){
+    const noneText = typeof t === 'function' ? t('list.none') : 'Aucune réservation pour l\'instant.';
+    container.innerHTML=`<p class="muted" style="text-align: center; padding: 30px; font-size: 16px;">${noneText}</p>`;
+    
+    // إظهار رسالة "لا توجد بيانات" إذا كانت موجودة
+    const noDataMsg = document.getElementById('noDataMessage');
+    if (noDataMsg && allBookings.length === 0) {
+      noDataMsg.style.display = 'block';
+    }
+    return;
+  }
+  
+  // إخفاء رسالة "لا توجد بيانات" إذا كانت هناك حجوزات
+  const noDataMsg = document.getElementById('noDataMessage');
+  if (noDataMsg) noDataMsg.style.display = 'none';
+  
   days.forEach(k=>{
     const dayBlock = document.createElement('div'); dayBlock.className='day-block';
     const title = document.createElement('div'); title.className='day-title'; const capacityText = typeof t === 'function' ? t('list.capacity') : 'Capacité: '; title.innerHTML = `<strong>${dayLabelFromKey(k)}</strong><span class="muted">${capacityText}${capacity(k)}</span>`;
@@ -155,7 +178,6 @@ function renderList(){
     });
     container.appendChild(dayBlock);
   });
-  const noneText = typeof t === 'function' ? t('list.none') : 'Aucune réservation pour l\'instant.'; if(days.length===0) container.innerHTML=`<p class="muted">${noneText}</p>`;
 }
 
 // render cancelled days with restore button

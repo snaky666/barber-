@@ -76,6 +76,14 @@
 
   <section class="card">
     <div id="publicDays"></div>
+    <div id="noDataMessage" style="display: none; text-align: center; padding: 40px;">
+      <p class="muted" style="font-size: 18px; margin-bottom: 20px;">
+        📋 لا توجد حجوزات حالياً في قاعدة البيانات
+      </p>
+      <button onclick="loadTestData()" style="background: var(--gold1); padding: 12px 24px;">
+        <span>➕ تحميل 3 حجوزات تجريبية</span>
+      </button>
+    </div>
   </section>
 </main>
 
@@ -96,6 +104,74 @@
   </div>
 </div>
 
-<script>document.addEventListener('DOMContentLoaded', ()=>{ renderList(); });</script>
+<script>
+// تحميل بيانات تجريبية
+async function loadTestData() {
+  if (!confirm('هل تريد إضافة 3 حجوزات تجريبية إلى قاعدة البيانات؟')) return;
+  
+  const testBookings = [
+    {
+      id: 'test_' + Date.now() + '_1',
+      name: 'أحمد',
+      surname: 'محمد',
+      phone: '0555123456',
+      dayKey: '2025-10-20',
+      dayLabel: 'Dimanche 20/10/2025',
+      inProgress: false,
+      completed: false,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'test_' + Date.now() + '_2',
+      name: 'فاطمة',
+      surname: 'علي',
+      phone: '0666789012',
+      dayKey: '2025-10-20',
+      dayLabel: 'Dimanche 20/10/2025',
+      inProgress: false,
+      completed: false,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'test_' + Date.now() + '_3',
+      name: 'صالح',
+      surname: 'بوعزة',
+      phone: '0777456123',
+      dayKey: '2025-10-23',
+      dayLabel: 'Mercredi 23/10/2025',
+      inProgress: false,
+      completed: false,
+      createdAt: new Date().toISOString()
+    }
+  ];
+  
+  try {
+    const bookings = load(LS_KEYS.BOOK) || [];
+    bookings.push(...testBookings);
+    await save(LS_KEYS.BOOK, bookings);
+    alert('✅ تم إضافة 3 حجوزات تجريبية بنجاح!');
+    location.reload();
+  } catch (error) {
+    console.error('خطأ في إضافة البيانات:', error);
+    alert('❌ حدث خطأ في إضافة البيانات');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { 
+  // الانتظار قليلاً لتحميل البيانات من Supabase
+  setTimeout(() => {
+    renderList();
+    
+    // فحص إذا كانت القائمة فارغة بعد ثانيتين
+    setTimeout(() => {
+      const allBookings = load(LS_KEYS.BOOK) || [];
+      const noDataMsg = document.getElementById('noDataMessage');
+      if (allBookings.length === 0 && noDataMsg) {
+        noDataMsg.style.display = 'block';
+      }
+    }, 2000);
+  }, 1000);
+});
+</script>
 </body>
 </html>
