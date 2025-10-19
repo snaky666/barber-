@@ -606,8 +606,17 @@ function populateDaySelect(){
 function openLoginModal(){ document.getElementById('loginModal') && document.getElementById('loginModal').classList.remove('hidden'); }
 function closeLoginModal(){ document.getElementById('loginModal') && document.getElementById('loginModal').classList.add('hidden'); }
 function doModalLogin(){
-  const u = document.getElementById('modalUser').value.trim(); const p = document.getElementById('modalPass').value.trim();
+  const u = document.getElementById('modalUser').value.trim(); 
+  const p = document.getElementById('modalPass').value.trim();
   const c = load(LS_KEYS.CREDS);
+  
+  // التحقق من وجود البيانات
+  if(!c || !c.user || !c.pass){
+    const msg = document.getElementById('modalMsg');
+    if (msg) msg.innerText = 'خطأ في تحميل بيانات الدخول';
+    return;
+  }
+  
   if(u === c.user && p === c.pass){ // success
     closeLoginModal();
     // Store login state and redirect

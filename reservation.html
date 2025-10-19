@@ -112,11 +112,26 @@
 </div>
 
 <script>
-// تحديث القائمة عند تحميل الصفحة
+// تحديث القائمة عند تحميل الصفحة - مع انتظار تحميل البيانات من Supabase
 window.addEventListener('DOMContentLoaded', () => {
+  // محاولة تحميل القائمة فوراً
   if (typeof populateAvailableDays === 'function') {
     populateAvailableDays();
   }
+  
+  // محاولة ثانية بعد ثانية واحدة (في حالة تأخر تحميل البيانات)
+  setTimeout(() => {
+    if (typeof populateAvailableDays === 'function') {
+      populateAvailableDays();
+    }
+  }, 1000);
+  
+  // محاولة ثالثة بعد ثانيتين
+  setTimeout(() => {
+    if (typeof populateAvailableDays === 'function') {
+      populateAvailableDays();
+    }
+  }, 2000);
 });
 
 // إرسال النموذج
@@ -127,6 +142,11 @@ document.getElementById('resForm').addEventListener('submit', function(e){
   const surname = document.getElementById('surname').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const selectedDay = document.getElementById('daySelect').value;
+
+  if(!selectedDay){
+    alert('الرجاء اختيار يوم للحجز');
+    return;
+  }
 
   const success = addBooking(name, surname, phone, selectedDay);
 
