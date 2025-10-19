@@ -31,8 +31,8 @@ async function getAllBookings() {
     const { data, error } = await client
       .from(SUPABASE_CONFIG.tables.bookings)
       .select('*')
-      .order('"dayKey"', { ascending: true })
-      .order('"createdAt"', { ascending: true });
+      .order('daykey', { ascending: true })
+      .order('createdat', { ascending: true });
 
     if (error) throw error;
     return data || [];
@@ -48,8 +48,8 @@ async function getBookingsByDay(dayKey) {
     const { data, error } = await client
       .from(SUPABASE_CONFIG.tables.bookings)
       .select('*')
-      .eq('"dayKey"', dayKey)
-      .order('"createdAt"', { ascending: true });
+      .eq('daykey', dayKey)
+      .order('createdat', { ascending: true });
 
     if (error) throw error;
     return data || [];
@@ -131,7 +131,7 @@ async function getAllCancelledDays() {
     const { data, error } = await client
       .from(SUPABASE_CONFIG.tables.cancelled)
       .select('*')
-      .order('"ts"', { ascending: false });
+      .order('ts', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -162,7 +162,7 @@ async function deleteCancelledDay(dayKey) {
     const { error } = await client
       .from(SUPABASE_CONFIG.tables.cancelled)
       .delete()
-      .eq('"dayKey"', dayKey);
+      .eq('daykey', dayKey);
 
     if (error) throw error;
   } catch (error) {

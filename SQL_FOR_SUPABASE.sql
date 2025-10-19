@@ -1,3 +1,4 @@
+
 -- ═══════════════════════════════════════════════════════════
 -- سكريبت إنشاء قاعدة البيانات - نظام حجز صالون الحلاقة
 -- انسخ هذا الكود بالكامل والصقه في Supabase SQL Editor
@@ -9,21 +10,21 @@ CREATE TABLE IF NOT EXISTS bookings (
   name TEXT NOT NULL,
   surname TEXT NOT NULL,
   phone TEXT DEFAULT '',
-  dayKey TEXT NOT NULL,
-  dayLabel TEXT NOT NULL,
-  inProgress BOOLEAN DEFAULT FALSE,
+  daykey TEXT NOT NULL,
+  daylabel TEXT NOT NULL,
+  inprogress BOOLEAN DEFAULT FALSE,
   completed BOOLEAN DEFAULT FALSE,
-  createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  createdat TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updatedat TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_bookings_daykey ON bookings(dayKey);
+CREATE INDEX IF NOT EXISTS idx_bookings_daykey ON bookings(daykey);
 CREATE INDEX IF NOT EXISTS idx_bookings_completed ON bookings(completed);
 
 -- 2. جدول الأيام الملغاة (Cancelled Days)
 CREATE TABLE IF NOT EXISTS cancelled_days (
   id TEXT PRIMARY KEY,
-  dayKey TEXT NOT NULL UNIQUE,
+  daykey TEXT NOT NULL UNIQUE,
   ts TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   bookings JSONB DEFAULT '[]'::jsonb
 );
@@ -50,8 +51,11 @@ CREATE INDEX IF NOT EXISTS idx_journal_ts ON journal(ts DESC);
 -- 5. جدول الدخل (Income)
 CREATE TABLE IF NOT EXISTS income (
   id TEXT PRIMARY KEY,
-  clientName TEXT NOT NULL,
+  bookingid TEXT,
+  clientname TEXT NOT NULL,
+  daykey TEXT,
   amount NUMERIC(10, 2) NOT NULL,
+  wasdebt BOOLEAN DEFAULT FALSE,
   ts TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -60,7 +64,12 @@ CREATE INDEX IF NOT EXISTS idx_income_ts ON income(ts DESC);
 -- 6. جدول الديون (Debt)
 CREATE TABLE IF NOT EXISTS debt (
   id TEXT PRIMARY KEY,
-  clientName TEXT NOT NULL,
+  bookingid TEXT,
+  name TEXT NOT NULL,
+  surname TEXT NOT NULL,
+  phone TEXT DEFAULT '',
+  daykey TEXT,
+  daylabel TEXT,
   amount NUMERIC(10, 2) NOT NULL,
   paid BOOLEAN DEFAULT FALSE,
   ts TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -72,13 +81,13 @@ CREATE INDEX IF NOT EXISTS idx_debt_ts ON debt(ts DESC);
 -- 7. جدول أيام العمل (Work Days)
 CREATE TABLE IF NOT EXISTS workdays (
   id SERIAL PRIMARY KEY,
-  dayOfWeek INTEGER NOT NULL UNIQUE,
-  dayName TEXT NOT NULL,
+  dayofweek INTEGER NOT NULL UNIQUE,
+  dayname TEXT NOT NULL,
   capacity INTEGER NOT NULL DEFAULT 5,
-  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  updatedat TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_workdays_dayofweek ON workdays(dayOfWeek);
+CREATE INDEX IF NOT EXISTS idx_workdays_dayofweek ON workdays(dayofweek);
 
 -- ═══════════════════════════════════════════════════════════
 -- تفعيل Row Level Security (RLS)
@@ -94,7 +103,6 @@ ALTER TABLE workdays ENABLE ROW LEVEL SECURITY;
 
 -- ═══════════════════════════════════════════════════════════
 -- سياسات الأمان (Security Policies)
--- الجميع يمكنهم القراءة والكتابة (مناسب للتطبيقات العامة)
 -- ═══════════════════════════════════════════════════════════
 
 -- سياسة القراءة: الجميع يمكنهم القراءة
@@ -139,13 +147,13 @@ CREATE POLICY "Allow public delete on workdays" ON workdays FOR DELETE USING (tr
 -- إدراج البيانات الافتراضية لأيام العمل
 -- ═══════════════════════════════════════════════════════════
 
-INSERT INTO workdays (dayOfWeek, dayName, capacity) VALUES
+INSERT INTO workdays (dayofweek, dayname, capacity) VALUES
   (0, 'Dimanche', 5),
   (2, 'Mardi', 5),
   (4, 'Jeudi', 5),
   (5, 'Vendredi', 3),
   (6, 'Samedi', 5)
-ON CONFLICT (dayOfWeek) DO NOTHING;
+ON CONFLICT (dayofweek) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
 -- تم الانتهاء! 
