@@ -23,13 +23,14 @@ async function initData() {
     console.log('📥 جاري تحميل البيانات من Supabase...');
     
     // تحميل جميع البيانات بشكل متوازي
-    const [bookings, cancelled, annonces, journal, income, debt] = await Promise.all([
+    const [bookings, cancelled, annonces, journal, income, debt, workdays] = await Promise.all([
       getAllBookings(),
       getAllCancelledDays(),
       getAllAnnouncements(),
       getAllJournal(),
       getAllIncome(),
-      getAllDebt()
+      getAllDebt(),
+      getAllWorkDays()
     ]);
     
     dataCache.bookings = bookings;
@@ -38,6 +39,7 @@ async function initData() {
     dataCache.journal = journal;
     dataCache.income = income;
     dataCache.debt = debt;
+    dataCache.workdays = workdays;
     
     // تحميل الاعتمادات من localStorage
     const storedCreds = localStorage.getItem('bp_creds');
@@ -93,10 +95,9 @@ function load(key) {
     return dataCache.creds;
   }
   
-  // أيام العمل تُقرأ من localStorage مباشرة
+  // أيام العمل تُقرأ من الكاش (Supabase)
   if (dataKey === 'workdays') {
-    const stored = localStorage.getItem('bp_workdays');
-    return stored ? JSON.parse(stored) : [];
+    return dataCache.workdays || [];
   }
   
   return dataCache[dataKey] || [];
@@ -111,7 +112,8 @@ function save(key, value) {
     'bp_journal': 'journal',
     'bp_income': 'income',
     'bp_debt': 'debt',
-    'bp_creds': 'creds'
+    'bp_creds': 'creds',
+    'bp_workdays': 'workdays'
   };
   
   const dataKey = keyMap[key];
@@ -143,6 +145,9 @@ function save(key, value) {
       } else if (dataKey === 'debt') {
         await saveAllDebt(value);
         console.log('💾 تم حفظ الديون في Supabase');
+      } else if (dataKey === 'workdays') {
+        await saveAllWorkDays(value);
+        console.log('💾 تم حفظ أيام العمل في Supabase');
       }
     } catch (error) {
       console.error('خطأ في حفظ البيانات:', error);

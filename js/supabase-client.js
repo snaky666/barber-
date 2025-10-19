@@ -351,6 +351,87 @@ async function deleteDebt(id) {
 }
 
 // ====================
+// دوال أيام العمل (Work Days)
+// ====================
+
+async function getAllWorkDays() {
+  try {
+    const client = initSupabase();
+    const { data, error } = await client
+      .from(SUPABASE_CONFIG.tables.workdays)
+      .select('*')
+      .order('dayOfWeek', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('خطأ في جلب أيام العمل:', error);
+    return [];
+  }
+}
+
+async function addWorkDay(workday) {
+  const client = initSupabase();
+  const { data, error } = await client
+    .from(SUPABASE_CONFIG.tables.workdays)
+    .insert([workday])
+    .select();
+
+  if (error) {
+    console.error('خطأ في إضافة يوم عمل:', error);
+    throw error;
+  }
+
+  return data[0];
+}
+
+async function updateWorkDay(dayOfWeek, updates) {
+  const client = initSupabase();
+  const { data, error } = await client
+    .from(SUPABASE_CONFIG.tables.workdays)
+    .update(updates)
+    .eq('dayOfWeek', dayOfWeek)
+    .select();
+
+  if (error) {
+    console.error('خطأ في تحديث يوم العمل:', error);
+    throw error;
+  }
+
+  return data[0];
+}
+
+async function deleteWorkDay(dayOfWeek) {
+  const client = initSupabase();
+  const { error } = await client
+    .from(SUPABASE_CONFIG.tables.workdays)
+    .delete()
+    .eq('dayOfWeek', dayOfWeek);
+
+  if (error) {
+    console.error('خطأ في حذف يوم العمل:', error);
+    throw error;
+  }
+}
+
+async function saveAllWorkDays(workdays) {
+  const client = initSupabase();
+
+  await client.from(SUPABASE_CONFIG.tables.workdays).delete().neq('dayOfWeek', -1);
+
+  if (workdays.length > 0) {
+    const { error } = await client
+      .from(SUPABASE_CONFIG.tables.workdays)
+      .insert(workdays);
+
+    if (error) {
+      console.error('خطأ في حفظ أيام العمل:', error);
+      throw error;
+    }
+  }
+}
+
+// ====================
 // الاشتراك في التحديثات الفورية (Real-time)
 // ====================
 

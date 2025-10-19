@@ -69,6 +69,17 @@ CREATE TABLE IF NOT EXISTS debt (
 CREATE INDEX IF NOT EXISTS idx_debt_paid ON debt(paid);
 CREATE INDEX IF NOT EXISTS idx_debt_ts ON debt(ts DESC);
 
+-- 7. جدول أيام العمل (Work Days)
+CREATE TABLE IF NOT EXISTS workdays (
+  id SERIAL PRIMARY KEY,
+  dayOfWeek INTEGER NOT NULL UNIQUE,
+  dayName TEXT NOT NULL,
+  capacity INTEGER NOT NULL DEFAULT 5,
+  updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_workdays_dayofweek ON workdays(dayOfWeek);
+
 -- ═══════════════════════════════════════════════════════════
 -- تفعيل Row Level Security (RLS)
 -- ═══════════════════════════════════════════════════════════
@@ -79,6 +90,7 @@ ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE journal ENABLE ROW LEVEL SECURITY;
 ALTER TABLE income ENABLE ROW LEVEL SECURITY;
 ALTER TABLE debt ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workdays ENABLE ROW LEVEL SECURITY;
 
 -- ═══════════════════════════════════════════════════════════
 -- سياسات الأمان (Security Policies)
@@ -92,6 +104,7 @@ CREATE POLICY "Allow public read access on announcements" ON announcements FOR S
 CREATE POLICY "Allow public read access on journal" ON journal FOR SELECT USING (true);
 CREATE POLICY "Allow public read access on income" ON income FOR SELECT USING (true);
 CREATE POLICY "Allow public read access on debt" ON debt FOR SELECT USING (true);
+CREATE POLICY "Allow public read access on workdays" ON workdays FOR SELECT USING (true);
 
 -- سياسة الكتابة: الجميع يمكنهم الكتابة
 CREATE POLICY "Allow public insert on bookings" ON bookings FOR INSERT WITH CHECK (true);
@@ -117,6 +130,22 @@ CREATE POLICY "Allow public delete on income" ON income FOR DELETE USING (true);
 CREATE POLICY "Allow public insert on debt" ON debt FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public update on debt" ON debt FOR UPDATE USING (true);
 CREATE POLICY "Allow public delete on debt" ON debt FOR DELETE USING (true);
+
+CREATE POLICY "Allow public insert on workdays" ON workdays FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update on workdays" ON workdays FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete on workdays" ON workdays FOR DELETE USING (true);
+
+-- ═══════════════════════════════════════════════════════════
+-- إدراج البيانات الافتراضية لأيام العمل
+-- ═══════════════════════════════════════════════════════════
+
+INSERT INTO workdays (dayOfWeek, dayName, capacity) VALUES
+  (0, 'Dimanche', 5),
+  (2, 'Mardi', 5),
+  (4, 'Jeudi', 5),
+  (5, 'Vendredi', 3),
+  (6, 'Samedi', 5)
+ON CONFLICT (dayOfWeek) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
 -- تم الانتهاء! 

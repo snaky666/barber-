@@ -16,7 +16,8 @@ const SUPABASE_CONFIG = {
     annonces: 'announcements',
     journal: 'journal',
     income: 'income',
-    debt: 'debt'
+    debt: 'debt',
+    workdays: 'workdays'
   }
 };
 

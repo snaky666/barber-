@@ -10,28 +10,25 @@ function ensureDefaults(){
   // تأكد من وجود الاعتمادات في localStorage فقط
   if(!localStorage.getItem('bp_creds')) localStorage.setItem('bp_creds', JSON.stringify({user:'younes', pass:'younes'}));
   
-  // تأكد من وجود إعدادات أيام العمل الافتراضية
-  if(!localStorage.getItem('bp_workdays')) {
-    const defaultWorkDays = [
-      {dayOfWeek: 0, dayName: 'Dimanche', capacity: 5},
-      {dayOfWeek: 2, dayName: 'Mardi', capacity: 5},
-      {dayOfWeek: 4, dayName: 'Jeudi', capacity: 5},
-      {dayOfWeek: 5, dayName: 'Vendredi', capacity: 3},
-      {dayOfWeek: 6, dayName: 'Samedi', capacity: 5}
-    ];
-    localStorage.setItem('bp_workdays', JSON.stringify(defaultWorkDays));
-  } else {
-    // إضافة يوم السبت للمستخدمين الحاليين إذا لم يكن موجوداً
-    const workDays = JSON.parse(localStorage.getItem('bp_workdays'));
-    const hasSaturday = workDays.some(d => d.dayOfWeek === 6);
-    if (!hasSaturday) {
-      workDays.push({dayOfWeek: 6, dayName: 'Samedi', capacity: 5});
-      localStorage.setItem('bp_workdays', JSON.stringify(workDays));
-      console.log('✅ تم إضافة يوم السبت إلى أيام العمل');
+  // مزامنة أيام العمل من localStorage إلى Supabase لأول مرة
+  // هذا يتم مرة واحدة فقط لترحيل البيانات الموجودة
+  if(localStorage.getItem('bp_workdays')) {
+    const localWorkDays = JSON.parse(localStorage.getItem('bp_workdays'));
+    // حفظ في Supabase إذا لم تكن موجودة بالفعل
+    const currentWorkDays = load(LS_KEYS.WORKDAYS);
+    if(currentWorkDays.length === 0 && localWorkDays.length > 0) {
+      console.log('🔄 ترحيل أيام العمل من localStorage إلى Supabase...');
+      save(LS_KEYS.WORKDAYS, localWorkDays);
     }
+    // حذف من localStorage بعد الترحيل
+    localStorage.removeItem('bp_workdays');
+    console.log('✅ تم ترحيل أيام العمل إلى Supabase');
   }
 }
-ensureDefaults();
+// الانتظار حتى يتم تحميل البيانات من Supabase
+setTimeout(() => {
+  ensureDefaults();
+}, 500);
 
 // Days: جميع أيام الأسبوع
 function dayLabelFromKey(key){ 
@@ -51,13 +48,9 @@ function dayLabelFromKey(key){
 }
 function dayKeyFromDate(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 
-// الحصول على أيام العمل المُكونة
+// الحصول على أيام العمل المُكونة من Supabase
 function getConfiguredWorkDays() {
-  const stored = localStorage.getItem('bp_workdays');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  return [];
+  return load(LS_KEYS.WORKDAYS) || [];
 }
 
 // الحصول على قائمة أيام العمل القادمة بناءً على التكوين
@@ -837,7 +830,7 @@ function addWorkingDay() {
     capacity: cap
   });
   
-  localStorage.setItem('bp_workdays', JSON.stringify(workDays));
+  save(LS_KEYS.WORKDAYS, workDays);
   log(`Jour de travail ajouté: ${dayNames[dayNum]} (capacité: ${cap})`);
   renderWorkingDaysConfig();
   renderAdminDays();
@@ -862,7 +855,7 @@ function removeWorkingDay(dayOfWeek) {
   let workDays = getConfiguredWorkDays();
   workDays = workDays.filter(d => d.dayOfWeek !== dayOfWeek);
   
-  localStorage.setItem('bp_workdays', JSON.stringify(workDays));
+  save(LS_KEYS.WORKDAYS, workDays);
   log(`Jour de travail supprimé: ${dayNames[dayOfWeek]}`);
   renderWorkingDaysConfig();
   renderAdminDays();
@@ -889,7 +882,7 @@ function editDayCapacity(dayOfWeek) {
   }
   
   day.capacity = cap;
-  localStorage.setItem('bp_workdays', JSON.stringify(workDays));
+  save(LS_KEYS.WORKDAYS, workDays);
   log(`Capacité modifiée: ${day.dayName} → ${cap} clients`);
   renderWorkingDaysConfig();
   renderAdminDays();
@@ -899,31 +892,6 @@ function editDayCapacity(dayOfWeek) {
   alert('✅ ' + (typeof t === 'function' ? t('workdays.updated') : 'Capacité mise à jour') + ': ' + cap + ' ' + (typeof t === 'function' ? t('workdays.clients') : 'clients'));
 }
 
-// حفظ أيام العمل في Supabase
-async function saveWorkDaysToSupabase() {
-  const workDays = getConfiguredWorkDays();
-  try {
-    const client = window.supabaseClient;
-    if (!client) return;
-    
-    // حذف جميع أيام العمل القديمة
-    await client.from('work_days').delete().neq('id', '');
-    
-    // إضافة أيام العمل الجديدة
-    if (workDays.length > 0) {
-      const data = workDays.map(w => ({
-        day_of_week: w.dayOfWeek,
-        day_name: w.dayName,
-        capacity: w.capacity
-      }));
-      await client.from('work_days').insert(data);
-    }
-    
-    console.log('💾 تم حفظ أيام العمل في Supabase');
-  } catch (error) {
-    console.error('خطأ في حفظ أيام العمل:', error);
-  }
-}
 
 // ملء قائمة الأيام المتاحة في صفحة الحجز
 function populateAvailableDays() {
