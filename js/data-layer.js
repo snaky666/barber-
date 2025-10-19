@@ -1,336 +1,198 @@
 // js/data-layer.js
-// طبقة البيانات - تستبدل localStorage بـ Supabase
+// طبقة البيانات - localStorage + JSON file
 
-// Cache للبيانات
-let dataCache = {
-  bookings: [],
-  cancelled: [],
-  annonces: [],
-  journal: [],
-  income: [],
-  debt: [],
-  workdays: [],
-  creds: {user: 'younes', pass: 'younes'} // تبقى في localStorage
+// ═══════════════════════════════════════════════════════════
+// المفاتيح المستخدمة في localStorage
+// ═══════════════════════════════════════════════════════════
+
+const STORAGE_KEYS = {
+  BOOKINGS: 'bookings',
+  CANCELLED: 'cancelled',
+  ANNONCES: 'annonces',
+  JOURNAL: 'journal',
+  INCOME: 'income',
+  DEBT: 'debt',
+  WORKDAYS: 'workdays',
+  CREDENTIALS: 'credentials'
 };
 
-let isInitialized = false;
-
-// تهيئة البيانات من Supabase
-async function initData() {
-  if (isInitialized) return;
-  
-  try {
-    console.log('📥 جاري تحميل البيانات من Supabase...');
-    
-    // تحميل جميع البيانات بشكل متوازي
-    const [bookings, cancelled, annonces, journal, income, debt, workdays] = await Promise.all([
-      getAllBookings(),
-      getAllCancelledDays(),
-      getAllAnnouncements(),
-      getAllJournal(),
-      getAllIncome(),
-      getAllDebt(),
-      getAllWorkDays()
-    ]);
-    
-    dataCache.bookings = bookings;
-    dataCache.cancelled = cancelled;
-    dataCache.annonces = annonces;
-    dataCache.journal = journal;
-    dataCache.income = income;
-    dataCache.debt = debt;
-    dataCache.workdays = workdays;
-    
-    // تحميل الاعتمادات من localStorage
-    const storedCreds = localStorage.getItem('bp_creds');
-    if (storedCreds) {
-      dataCache.creds = JSON.parse(storedCreds);
-    }
-    
-    isInitialized = true;
-    console.log('✅ تم تحميل البيانات بنجاح');
-    
-    // تحديث العرض
-    setTimeout(() => {
-      if (typeof renderList === 'function') renderList();
-      if (typeof renderAnnonces === 'function') renderAnnonces();
-      if (typeof renderAdminDays === 'function') renderAdminDays();
-      if (typeof renderDebts === 'function') renderDebts();
-      if (typeof renderAccounting === 'function') renderAccounting();
-    }, 100);
-    
-  } catch (error) {
-    console.error('❌ خطأ في تحميل البيانات:', error);
-    // في حالة الخطأ، نستخدم القيم الافتراضية
-    isInitialized = true;
-  }
-}
-
-// دالة load بديلة - تدعم async
-const LS_KEYS = {
-  CRED:'bp_creds', 
-  BOOK:'bp_bookings', 
-  CAN:'bp_cancelled', 
-  ANN:'bp_annonces', 
-  JOUR:'bp_journal', 
-  INCOME:'bp_income', 
-  DEBT:'bp_debt',
-  WORKDAYS:'bp_workdays'
-};
+// ═══════════════════════════════════════════════════════════
+// دوال مساعدة للـ localStorage
+// ═══════════════════════════════════════════════════════════
 
 function load(key) {
-  const keyMap = {
-    'bp_bookings': 'bookings',
-    'bp_cancelled': 'cancelled',
-    'bp_annonces': 'annonces',
-    'bp_journal': 'journal',
-    'bp_income': 'income',
-    'bp_debt': 'debt',
-    'bp_creds': 'creds',
-    'bp_workdays': 'workdays'
-  };
-  
-  const dataKey = keyMap[key];
-  if (dataKey === 'creds') {
-    return dataCache.creds;
+  const val = localStorage.getItem(key);
+  if (!val) return null;
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    console.error('خطأ في تحميل البيانات:', key, e);
+    return null;
   }
-  
-  // أيام العمل تُقرأ من الكاش (Supabase)
-  if (dataKey === 'workdays') {
-    return dataCache.workdays || [];
-  }
-  
-  return dataCache[dataKey] || [];
 }
 
-// دالة save بديلة - تحفظ في Supabase
 function save(key, value) {
-  const keyMap = {
-    'bp_bookings': 'bookings',
-    'bp_cancelled': 'cancelled',
-    'bp_annonces': 'annonces',
-    'bp_journal': 'journal',
-    'bp_income': 'income',
-    'bp_debt': 'debt',
-    'bp_creds': 'creds',
-    'bp_workdays': 'workdays'
-  };
-  
-  const dataKey = keyMap[key];
-  
-  if (dataKey === 'creds') {
-    dataCache.creds = value;
-    localStorage.setItem('bp_creds', JSON.stringify(value));
-    return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error('خطأ في حفظ البيانات:', key, e);
   }
-  
-  // تحديث الكاش مباشرة
-  dataCache[dataKey] = value;
-  
-  // حفظ في Supabase بشكل غير متزامن (fire and forget)
-  (async () => {
-    try {
-      if (dataKey === 'bookings') {
-        await saveAllBookings(value);
-        console.log('💾 تم حفظ الحجوزات في Supabase');
-      } else if (dataKey === 'annonces') {
-        await saveAllAnnouncements(value);
-        console.log('💾 تم حفظ الإعلانات في Supabase');
-      } else if (dataKey === 'journal') {
-        await saveAllJournal(value);
-        console.log('💾 تم حفظ السجل في Supabase');
-      } else if (dataKey === 'income') {
-        await saveAllIncome(value);
-        console.log('💾 تم حفظ الدخل في Supabase');
-      } else if (dataKey === 'debt') {
-        await saveAllDebt(value);
-        console.log('💾 تم حفظ الديون في Supabase');
-      } else if (dataKey === 'workdays') {
-        await saveAllWorkDays(value);
-        console.log('💾 تم حفظ أيام العمل في Supabase');
-      }
-    } catch (error) {
-      console.error('خطأ في حفظ البيانات:', error);
+}
+
+// ═══════════════════════════════════════════════════════════
+// تهيئة البيانات من الملف JSON
+// ═══════════════════════════════════════════════════════════
+
+async function initData() {
+  console.log('📥 جاري تحميل البيانات من data.json...');
+
+  try {
+    const response = await fetch('/api/data');
+    if (!response.ok) {
+      throw new Error('فشل تحميل البيانات من السيرفر');
     }
-  })();
-}
 
-function creds() {
-  return dataCache.creds;
-}
+    const data = await response.json();
 
-function saveCreds(value) {
-  dataCache.creds = value;
-  localStorage.setItem('bp_creds', JSON.stringify(value));
-}
+    // حفظ البيانات في localStorage
+    save(STORAGE_KEYS.BOOKINGS, data.bookings || []);
+    save(STORAGE_KEYS.CANCELLED, data.cancelled || []);
+    save(STORAGE_KEYS.ANNONCES, data.annonces || []);
+    save(STORAGE_KEYS.JOURNAL, data.journal || []);
+    save(STORAGE_KEYS.INCOME, data.income || []);
+    save(STORAGE_KEYS.DEBT, data.debt || []);
+    save(STORAGE_KEYS.WORKDAYS, data.workdays || []);
 
-// دوال مساعدة للحجوزات
-async function saveBooking(booking) {
-  try {
-    const result = await addBooking(booking);
-    dataCache.bookings.push(result);
-    return result;
+    console.log('✅ تم تحميل البيانات بنجاح');
   } catch (error) {
-    console.error('خطأ في حفظ الحجز:', error);
-    throw error;
-  }
-}
+    console.error('❌ خطأ في تحميل البيانات:', error);
 
-async function updateBookingData(id, updates) {
-  try {
-    const result = await updateBooking(id, updates);
-    const index = dataCache.bookings.findIndex(b => b.id === id);
-    if (index !== -1) {
-      dataCache.bookings[index] = {...dataCache.bookings[index], ...updates};
+    // استخدام البيانات الافتراضية إذا فشل التحميل
+    if (!load(STORAGE_KEYS.BOOKINGS)) save(STORAGE_KEYS.BOOKINGS, []);
+    if (!load(STORAGE_KEYS.CANCELLED)) save(STORAGE_KEYS.CANCELLED, []);
+    if (!load(STORAGE_KEYS.ANNONCES)) save(STORAGE_KEYS.ANNONCES, []);
+    if (!load(STORAGE_KEYS.JOURNAL)) save(STORAGE_KEYS.JOURNAL, []);
+    if (!load(STORAGE_KEYS.INCOME)) save(STORAGE_KEYS.INCOME, []);
+    if (!load(STORAGE_KEYS.DEBT)) save(STORAGE_KEYS.DEBT, []);
+    if (!load(STORAGE_KEYS.WORKDAYS)) {
+      save(STORAGE_KEYS.WORKDAYS, [
+        { dayOfWeek: 0, dayName: 'Dimanche', capacity: 5 },
+        { dayOfWeek: 2, dayName: 'Mardi', capacity: 5 },
+        { dayOfWeek: 4, dayName: 'Jeudi', capacity: 5 },
+        { dayOfWeek: 5, dayName: 'Vendredi', capacity: 3 },
+        { dayOfWeek: 6, dayName: 'Samedi', capacity: 5 }
+      ]);
     }
-    return result;
-  } catch (error) {
-    console.error('خطأ في تحديث الحجز:', error);
-    throw error;
   }
 }
 
-async function removeBooking(id) {
+// ═══════════════════════════════════════════════════════════
+// دوال الوصول للبيانات
+// ═══════════════════════════════════════════════════════════
+
+function getBookings() {
+  return load(STORAGE_KEYS.BOOKINGS) || [];
+}
+
+function saveBookings(bookings) {
+  save(STORAGE_KEYS.BOOKINGS, bookings);
+  syncToServer();
+}
+
+function getCancelled() {
+  return load(STORAGE_KEYS.CANCELLED) || [];
+}
+
+function saveCancelled(cancelled) {
+  save(STORAGE_KEYS.CANCELLED, cancelled);
+  syncToServer();
+}
+
+function getAnnonces() {
+  return load(STORAGE_KEYS.ANNONCES) || [];
+}
+
+function saveAnnonces(annonces) {
+  save(STORAGE_KEYS.ANNONCES, annonces);
+  syncToServer();
+}
+
+function getJournal() {
+  return load(STORAGE_KEYS.JOURNAL) || [];
+}
+
+function saveJournal(journal) {
+  save(STORAGE_KEYS.JOURNAL, journal);
+  syncToServer();
+}
+
+function getIncome() {
+  return load(STORAGE_KEYS.INCOME) || [];
+}
+
+function saveIncome(income) {
+  save(STORAGE_KEYS.INCOME, income);
+  syncToServer();
+}
+
+function getDebt() {
+  return load(STORAGE_KEYS.DEBT) || [];
+}
+
+function saveDebt(debt) {
+  save(STORAGE_KEYS.DEBT, debt);
+  syncToServer();
+}
+
+function getWorkDays() {
+  return load(STORAGE_KEYS.WORKDAYS) || [];
+}
+
+function saveWorkDays(workdays) {
+  save(STORAGE_KEYS.WORKDAYS, workdays);
+  syncToServer();
+}
+
+function getCredentials() {
+  return load(STORAGE_KEYS.CREDENTIALS) || { username: 'younes', password: 'younes' };
+}
+
+function saveCredentials(credentials) {
+  save(STORAGE_KEYS.CREDENTIALS, credentials);
+}
+
+// ═══════════════════════════════════════════════════════════
+// مزامنة البيانات مع السيرفر
+// ═══════════════════════════════════════════════════════════
+
+async function syncToServer() {
   try {
-    await deleteBooking(id);
-    dataCache.bookings = dataCache.bookings.filter(b => b.id !== id);
+    const data = {
+      bookings: getBookings(),
+      cancelled: getCancelled(),
+      annonces: getAnnonces(),
+      journal: getJournal(),
+      income: getIncome(),
+      debt: getDebt(),
+      workdays: getWorkDays()
+    };
+
+    await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
   } catch (error) {
-    console.error('خطأ في حذف الحجز:', error);
-    throw error;
+    console.error('خطأ في المزامنة مع السيرفر:', error);
   }
 }
 
-// دوال للإعلانات
-async function saveAnnouncement(announcement) {
-  try {
-    const result = await addAnnouncement(announcement);
-    dataCache.annonces.unshift(result);
-    return result;
-  } catch (error) {
-    console.error('خطأ في حفظ الإعلان:', error);
-    throw error;
-  }
-}
+// ═══════════════════════════════════════════════════════════
+// التهيئة عند تحميل الصفحة
+// ═══════════════════════════════════════════════════════════
 
-// حفظ جميع الإعلانات
-async function saveAllAnnouncements(announcements) {
-  const client = initSupabase();
-  await client.from(SUPABASE_CONFIG.tables.annonces).delete().neq('id', '');
-  if (announcements.length > 0) {
-    await client.from(SUPABASE_CONFIG.tables.annonces).insert(announcements);
-  }
-}
+initData().then(() => {
+  console.log('✅ طبقة البيانات جاهزة');
+});
 
-// دوال للسجل
-async function saveJournal(entry) {
-  try {
-    const result = await addJournalEntry(entry);
-    dataCache.journal.unshift(result);
-    return result;
-  } catch (error) {
-    console.error('خطأ في حفظ السجل:', error);
-    throw error;
-  }
-}
-
-// حفظ جميع سجلات الجورنال
-async function saveAllJournal(journal) {
-  const client = initSupabase();
-  await client.from(SUPABASE_CONFIG.tables.journal).delete().neq('id', '');
-  if (journal.length > 0) {
-    await client.from(SUPABASE_CONFIG.tables.journal).insert(journal);
-  }
-}
-
-// دوال للدخل
-async function saveIncome(income) {
-  try {
-    const result = await addIncome(income);
-    dataCache.income.push(result);
-    return result;
-  } catch (error) {
-    console.error('خطأ في حفظ الدخل:', error);
-    throw error;
-  }
-}
-
-// حفظ جميع الدخل
-async function saveAllIncome(income) {
-  const client = initSupabase();
-  await client.from(SUPABASE_CONFIG.tables.income).delete().neq('id', '');
-  if (income.length > 0) {
-    await client.from(SUPABASE_CONFIG.tables.income).insert(income);
-  }
-}
-
-// دوال للديون
-async function saveDebtData(debt) {
-  try {
-    const result = await addDebt(debt);
-    dataCache.debt.push(result);
-    return result;
-  } catch (error) {
-    console.error('خطأ في حفظ الدين:', error);
-    throw error;
-  }
-}
-
-// حفظ جميع الديون
-async function saveAllDebt(debt) {
-  const client = initSupabase();
-  await client.from(SUPABASE_CONFIG.tables.debt).delete().neq('id', '');
-  if (debt.length > 0) {
-    await client.from(SUPABASE_CONFIG.tables.debt).insert(debt);
-  }
-}
-
-// دوال للأيام الملغاة
-async function saveCancelledDay(cancelledDay) {
-  try {
-    const result = await addCancelledDay(cancelledDay);
-    dataCache.cancelled.push(result);
-    return result;
-  } catch (error) {
-    console.error('خطأ في حفظ اليوم الملغى:', error);
-    throw error;
-  }
-}
-
-async function removeCancelledDay(dayKey) {
-  try {
-    await deleteCancelledDay(dayKey);
-    dataCache.cancelled = dataCache.cancelled.filter(c => c.dayKey !== dayKey);
-  } catch (error) {
-    console.error('خطأ في حذف اليوم الملغى:', error);
-    throw error;
-  }
-}
-
-// الاشتراك في التحديثات الفورية
-function setupRealtimeSubscriptions() {
-  // الاشتراك في تحديثات الحجوزات
-  subscribeToBookings(async (payload) => {
-    console.log('تحديث فوري - حجوزات:', payload.eventType);
-    // إعادة تحميل الحجوزات
-    dataCache.bookings = await getAllBookings();
-    if (typeof renderList === 'function') renderList();
-    if (typeof renderAdminDays === 'function') renderAdminDays();
-  });
-  
-  // الاشتراك في تحديثات الإعلانات
-  subscribeToAnnouncements(async (payload) => {
-    console.log('تحديث فوري - إعلانات:', payload.eventType);
-    // إعادة تحميل الإعلانات
-    dataCache.annonces = await getAllAnnouncements();
-    if (typeof renderAnnonces === 'function') renderAnnonces();
-  });
-}
-
-// تهيئة فورية عند تحميل السكريبت
-(async function() {
-  await initData();
-  setupRealtimeSubscriptions();
-  console.log('✅ طبقة البيانات جاهزة وتم تحميل البيانات من Supabase');
-})();
-
-console.log('📊 تم تحميل طبقة البيانات (Supabase)');
+console.log('📊 تم تحميل طبقة البيانات (localStorage + JSON)');
