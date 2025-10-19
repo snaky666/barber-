@@ -42,6 +42,7 @@ function getConfiguredWorkDays() {
 }
 
 // الحصول على قائمة أيام العمل القادمة بناءً على التكوين
+// النظام الجديد: 15 يوم فقط للحجز
 function getWorkingDays(next=180){ 
   const workDaysConfig = getConfiguredWorkDays();
   const allowedDays = workDaysConfig.map(w => w.dayOfWeek);
@@ -53,6 +54,30 @@ function getWorkingDays(next=180){
     if(allowedDays.includes(d.getDay())) res.push(dayKeyFromDate(d)); 
   } 
   return res; 
+}
+
+// دالة للحصول على الأيام المتاحة للحجز العام (15 يوم فقط)
+function getAvailableBookingDays(){
+  const allWorkingDays = getWorkingDays(90); // نبحث في 90 يوم
+  const bookings = load(LS_KEYS.BOOK);
+  const availableDays = [];
+  
+  // نبحث عن 15 يوم متاح فقط
+  for(const dayKey of allWorkingDays){
+    const dayCapacity = capacity(dayKey);
+    const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey && !b.completed).length;
+    
+    if(dayBookingsCount < dayCapacity){
+      availableDays.push(dayKey);
+    }
+    
+    // توقف عند 15 يوم
+    if(availableDays.length >= 15){
+      break;
+    }
+  }
+  
+  return availableDays;
 }
 
 // الحصول على السعة من التكوين
@@ -103,6 +128,14 @@ function addBooking(name, surname, phone, selectedDayKey){
   document.getElementById('resInfo') && (document.getElementById('resInfo').innerText = successMsg); 
   
   log('Nouvelle réservation: ' + name + ' ' + surname + ' - ' + nb.dayLabel);
+  
+  // تحديث قائمة الأيام المتاحة تلقائيًا بعد الحجز
+  setTimeout(() => {
+    if(typeof populateAvailableDays === 'function'){
+      populateAvailableDays();
+    }
+  }, 100);
+  
   return true;
 }
 
@@ -879,6 +912,7 @@ function editDayCapacity(dayOfWeek) {
 
 
 // ملء قائمة الأيام المتاحة في صفحة الحجز
+// النظام الجديد: 15 يوم فقط متاح للحجز
 function populateAvailableDays() {
   const select = document.getElementById('daySelect');
   if (!select) return;
@@ -888,10 +922,11 @@ function populateAvailableDays() {
     select.remove(1);
   }
   
-  const workingDays = getWorkingDays(60); // الأيام الـ60 القادمة
+  // استخدام الدالة الجديدة التي تعيد 15 يوم فقط
+  const availableDays = getAvailableBookingDays();
   const bookings = load(LS_KEYS.BOOK);
   
-  workingDays.forEach(dayKey => {
+  availableDays.forEach(dayKey => {
     const dayCapacity = capacity(dayKey);
     // عد الحجوزات غير المكتملة فقط
     const dayBookingsCount = bookings.filter(b => b.dayKey === dayKey && !b.completed).length;
