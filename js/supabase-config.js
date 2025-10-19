@@ -4,8 +4,8 @@
 const SUPABASE_CONFIG = {
   // ⚠️ مهم: يجب على المستخدم إضافة هذه القيم من مشروعه في Supabase
   // 🔒 احتفظ بهذه المفاتيح سرية ولا تشاركها علناً
-  url: '', // مثال: https://krvxzcekdbzkrxfeccwu.supabase.co
-  anonKey: '', // مثال: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtydnh6Y2VrZGJ6a3J4ZmVjY3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MzA3MjAsImV4cCI6MjA3NjQwNjcyMH0.nq-kcxoNXt5obi51iWdjwPDbgmhJy0PzMhPrme1vbZc...
+  url: 'https://krvxzcekdbzkrxfeccwu.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtydnh6Y2VrZGJ6a3J4ZmVjY3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4MzA3MjAsImV4cCI6MjA3NjQwNjcyMH0.nq-kcxoNXt5obi51iWdjwPDbgmhJy0PzMhPrme1vbZc',
   
   // أسماء الجداول في قاعدة البيانات
   tables: {
