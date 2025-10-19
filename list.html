@@ -75,6 +75,9 @@
   </section>
 
   <section class="card">
+    <div id="loadingMessage" style="text-align: center; padding: 40px; display: block;">
+      <p class="muted" style="font-size: 18px;">🔄 جاري تحميل الحجوزات...</p>
+    </div>
     <div id="publicDays"></div>
   </section>
 </main>
@@ -184,20 +187,14 @@ function stopAutoRefresh() {
 document.addEventListener('DOMContentLoaded', () => { 
   // الانتظار قليلاً لتحميل البيانات من Supabase
   setTimeout(() => {
+    const loadingMsg = document.getElementById('loadingMessage');
+    if (loadingMsg) loadingMsg.style.display = 'none';
+    
     renderList();
 
     // بدء التحديث التلقائي
     startAutoRefresh();
-
-    // فحص إذا كانت القائمة فارغة بعد ثانيتين
-    setTimeout(() => {
-      const allBookings = load(LS_KEYS.BOOK) || [];
-      const noDataMsg = document.getElementById('noDataMessage');
-      if (allBookings.length === 0 && noDataMsg) {
-        noDataMsg.style.display = 'block';
-      }
-    }, 2000);
-  }, 1000);
+  }, 1500);
 });
 
 // إيقاف التحديث عند مغادرة الصفحة

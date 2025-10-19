@@ -141,21 +141,47 @@ function addBooking(name, surname, phone, selectedDayKey){
 
 // RENDER PUBLIC LIST grouped by day, show En cours badge (hide completed)
 function renderList(){
-  const container=document.getElementById('publicDays'); if(!container) return;
-  const bks = load(LS_KEYS.BOOK).filter(x => !x.completed).slice().sort((a,b)=> a.dayKey.localeCompare(b.dayKey) || a.createdAt.localeCompare(b.createdAt));
+  const container=document.getElementById('publicDays'); 
+  if(!container) return;
+  
+  const allBookings = load(LS_KEYS.BOOK);
+  console.log('📊 جميع الحجوزات:', allBookings);
+  
+  const bks = allBookings.filter(x => !x.completed).slice().sort((a,b)=> a.dayKey.localeCompare(b.dayKey) || a.createdAt.localeCompare(b.createdAt));
+  console.log('📋 الحجوزات النشطة (غير مكتملة):', bks);
+  
   const days = [...new Set(bks.map(x=>x.dayKey))];
   container.innerHTML='';
+  
+  if(days.length === 0 || bks.length === 0) {
+    const noneText = typeof t === 'function' ? t('list.none') : 'Aucune réservation pour l\'instant.';
+    container.innerHTML=`
+      <div class="card" style="text-align: center; padding: 40px; background: rgba(202, 164, 60, 0.05);">
+        <p class="muted" style="font-size: 18px; margin: 0;">${noneText}</p>
+      </div>
+    `;
+    return;
+  }
+  
   days.forEach(k=>{
-    const dayBlock = document.createElement('div'); dayBlock.className='day-block';
-    const title = document.createElement('div'); title.className='day-title'; const capacityText = typeof t === 'function' ? t('list.capacity') : 'Capacité: '; title.innerHTML = `<strong>${dayLabelFromKey(k)}</strong><span class="muted">${capacityText}${capacity(k)}</span>`;
+    const dayBlock = document.createElement('div'); 
+    dayBlock.className='day-block';
+    const title = document.createElement('div'); 
+    title.className='day-title'; 
+    const capacityText = typeof t === 'function' ? t('list.capacity') : 'Capacité: '; 
+    title.innerHTML = `<strong>${dayLabelFromKey(k)}</strong><span class="muted">${capacityText}${capacity(k)}</span>`;
     dayBlock.appendChild(title);
-    bks.filter(x=>x.dayKey===k).forEach(c=>{
-      const row=document.createElement('div'); row.className='client-row' + (c.inProgress? ' highlight':''); const badgeText = typeof t === 'function' ? t('list.inprogress') : 'En cours'; row.innerHTML = `<div class="client-name">${c.name} ${c.surname}</div><div class="client-actions">${c.inProgress? `<span class="badge">${badgeText}</span>`:''}</div>`;
+    
+    bks.filter(x=>x.dayKey===k).forEach((c, idx)=>{
+      const row=document.createElement('div'); 
+      row.className='client-row' + (c.inProgress? ' highlight':''); 
+      const badgeText = typeof t === 'function' ? t('list.inprogress') : 'En cours'; 
+      row.innerHTML = `<div class="client-name">${idx + 1}. ${c.name} ${c.surname}</div><div class="client-actions">${c.inProgress? `<span class="badge">${badgeText}</span>`:''}</div>`;
       dayBlock.appendChild(row);
     });
+    
     container.appendChild(dayBlock);
   });
-  const noneText = typeof t === 'function' ? t('list.none') : 'Aucune réservation pour l\'instant.'; if(days.length===0) container.innerHTML=`<p class="muted">${noneText}</p>`;
 }
 
 // render cancelled days with restore button
