@@ -8,27 +8,15 @@ function uid(){ return 'id_' + Math.random().toString(36).slice(2,9); }
 
 function ensureDefaults(){
   // تأكد من وجود الاعتمادات في localStorage فقط
-  if(!localStorage.getItem('bp_creds')) localStorage.setItem('bp_creds', JSON.stringify({user:'younes', pass:'younes'}));
-  
-  // مزامنة أيام العمل من localStorage إلى Supabase لأول مرة
-  // هذا يتم مرة واحدة فقط لترحيل البيانات الموجودة
-  if(localStorage.getItem('bp_workdays')) {
-    const localWorkDays = JSON.parse(localStorage.getItem('bp_workdays'));
-    // حفظ في Supabase إذا لم تكن موجودة بالفعل
-    const currentWorkDays = load(LS_KEYS.WORKDAYS);
-    if(currentWorkDays.length === 0 && localWorkDays.length > 0) {
-      console.log('🔄 ترحيل أيام العمل من localStorage إلى Supabase...');
-      save(LS_KEYS.WORKDAYS, localWorkDays);
-    }
-    // حذف من localStorage بعد الترحيل
-    localStorage.removeItem('bp_workdays');
-    console.log('✅ تم ترحيل أيام العمل إلى Supabase');
+  const creds = load(LS_KEYS.CREDS);
+  if(!creds || !creds.user || !creds.pass) {
+    save(LS_KEYS.CREDS, {user:'younes', pass:'younes'});
   }
 }
 // الانتظار حتى يتم تحميل البيانات من Supabase
 setTimeout(() => {
   ensureDefaults();
-}, 500);
+}, 1000);
 
 // Days: جميع أيام الأسبوع
 function dayLabelFromKey(key){ 
@@ -635,16 +623,13 @@ function renderJournal(){ const el = document.getElementById('journalList'); if(
 function resetAll(){ 
   if(!confirm('⚠️ حذف جميع البيانات نهائياً؟\n\nسيتم مسح:\n• جميع الحجوزات\n• الديون والمدفوعات\n• الإعلانات والسجل\n• الأيام الملغاة\n\nهل أنت متأكد؟')) return;
   
-  // Clear all data
-  localStorage.removeItem(LS_KEYS.BOOK);
-  localStorage.removeItem(LS_KEYS.CAN);
-  localStorage.removeItem(LS_KEYS.ANN);
-  localStorage.removeItem(LS_KEYS.JOUR);
-  localStorage.removeItem(LS_KEYS.INCOME);
-  localStorage.removeItem(LS_KEYS.DEBT);
-  
-  // Reset to defaults
-  ensureDefaults();
+  // Clear all data using save() function
+  save(LS_KEYS.BOOK, []);
+  save(LS_KEYS.CANCELLED, []);
+  save(LS_KEYS.ANNONCES, []);
+  save(LS_KEYS.JOURNAL, []);
+  save(LS_KEYS.INCOME, []);
+  save(LS_KEYS.DEBT, []);
   
   // Re-render everything
   renderList();
