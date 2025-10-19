@@ -360,7 +360,7 @@ async function getAllWorkDays() {
     const { data, error } = await client
       .from(SUPABASE_CONFIG.tables.workdays)
       .select('*')
-      .order('dayOfWeek', { ascending: true });
+      .order('dayofweek', { ascending: true });
 
     if (error) throw error;
     return data || [];
@@ -390,7 +390,7 @@ async function updateWorkDay(dayOfWeek, updates) {
   const { data, error } = await client
     .from(SUPABASE_CONFIG.tables.workdays)
     .update(updates)
-    .eq('dayOfWeek', dayOfWeek)
+    .eq('dayofweek', dayOfWeek)
     .select();
 
   if (error) {
@@ -406,7 +406,7 @@ async function deleteWorkDay(dayOfWeek) {
   const { error } = await client
     .from(SUPABASE_CONFIG.tables.workdays)
     .delete()
-    .eq('dayOfWeek', dayOfWeek);
+    .eq('dayofweek', dayOfWeek);
 
   if (error) {
     console.error('خطأ في حذف يوم العمل:', error);
@@ -417,7 +417,7 @@ async function deleteWorkDay(dayOfWeek) {
 async function saveAllWorkDays(workdays) {
   const client = initSupabase();
 
-  await client.from(SUPABASE_CONFIG.tables.workdays).delete().neq('dayOfWeek', -1);
+  await client.from(SUPABASE_CONFIG.tables.workdays).delete().neq('dayofweek', -1);
 
   if (workdays.length > 0) {
     const { error } = await client

@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS debt (
 CREATE INDEX IF NOT EXISTS idx_debt_paid ON debt(paid);
 CREATE INDEX IF NOT EXISTS idx_debt_ts ON debt(ts DESC);
 
--- 7. جدول أيام العمل (Work Days)
+-- 7. جدول أيام العمل (Work Days) - الجدول المفقود!
 CREATE TABLE IF NOT EXISTS workdays (
   id SERIAL PRIMARY KEY,
   dayofweek INTEGER NOT NULL UNIQUE,
