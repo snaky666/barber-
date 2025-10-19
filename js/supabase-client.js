@@ -1,55 +1,47 @@
 // js/supabase-client.js
-// عميل Supabase للتعامل مع قاعدة البيانات
+// عميل Supabase مع دوال CRUD
 
 let supabaseClient = null;
 
 // تهيئة عميل Supabase
-function initSupabase() {
-  if (typeof supabase === 'undefined') {
-    console.error('❌ مكتبة Supabase غير محملة! تأكد من تحميل السكريبت في HTML');
-    return null;
-  }
+async function initSupabase() {
+  try {
+    // التحقق من وجود إعدادات Supabase
+    if (!validateSupabaseConfig()) {
+      console.warn('⚠️ لم يتم تكوين Supabase - سيتم استخدام localStorage كنسخة احتياطية');
+      return null;
+    }
 
-  if (!supabaseClient) {
+    // التحقق من تحميل مكتبة Supabase
+    if (typeof supabase === 'undefined') {
+      console.error('❌ مكتبة Supabase غير محملة!');
+      return null;
+    }
+
+    // إنشاء عميل Supabase
     supabaseClient = supabase.createClient(
       SUPABASE_CONFIG.url,
       SUPABASE_CONFIG.anonKey
     );
-    console.log('✅ تم الاتصال بقاعدة البيانات Supabase');
-  }
 
-  return supabaseClient;
+    console.log('✅ تم الاتصال بقاعدة البيانات Supabase');
+    return supabaseClient;
+  } catch (error) {
+    console.error('❌ خطأ في الاتصال بـ Supabase:', error);
+    return null;
+  }
 }
 
-// ====================
-// دوال الحجوزات (Bookings)
-// ====================
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD للحجوزات (Bookings)
+// ═══════════════════════════════════════════════════════════
 
 async function getAllBookings() {
   try {
-    const client = initSupabase();
-    const { data, error } = await client
-      .from(SUPABASE_CONFIG.tables.bookings)
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.BOOKINGS)
       .select('*')
-      .order('daykey', { ascending: true })
-      .order('createdat', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('خطأ في جلب الحجوزات:', error);
-    return [];
-  }
-}
-
-async function getBookingsByDay(dayKey) {
-  try {
-    const client = initSupabase();
-    const { data, error } = await client
-      .from(SUPABASE_CONFIG.tables.bookings)
-      .select('*')
-      .eq('daykey', dayKey)
-      .order('createdat', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -60,78 +52,61 @@ async function getBookingsByDay(dayKey) {
 }
 
 async function addBooking(booking) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.bookings)
-    .insert([booking])
-    .select();
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.BOOKINGS)
+      .insert([booking])
+      .select();
 
-  if (error) {
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
     console.error('خطأ في إضافة حجز:', error);
     throw error;
   }
-
-  return data[0];
 }
 
 async function updateBooking(id, updates) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.bookings)
-    .update(updates)
-    .eq('id', id)
-    .select();
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.BOOKINGS)
+      .update(updates)
+      .eq('id', id)
+      .select();
 
-  if (error) {
-    console.error('خطأ في تحديث الحجز:', error);
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
+    console.error('خطأ في تحديث حجز:', error);
     throw error;
   }
-
-  return data[0];
 }
 
 async function deleteBooking(id) {
-  const client = initSupabase();
-  const { error } = await client
-    .from(SUPABASE_CONFIG.tables.bookings)
-    .delete()
-    .eq('id', id);
+  try {
+    const { error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.BOOKINGS)
+      .delete()
+      .eq('id', id);
 
-  if (error) {
-    console.error('خطأ في حذف الحجز:', error);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('خطأ في حذف حجز:', error);
     throw error;
   }
 }
 
-async function saveAllBookings(bookings) {
-  const client = initSupabase();
-
-  // حذف جميع الحجوزات الحالية ثم إدراج الجديدة
-  await client.from(SUPABASE_CONFIG.tables.bookings).delete().neq('id', '');
-
-  if (bookings.length > 0) {
-    const { error } = await client
-      .from(SUPABASE_CONFIG.tables.bookings)
-      .insert(bookings);
-
-    if (error) {
-      console.error('خطأ في حفظ الحجوزات:', error);
-      throw error;
-    }
-  }
-}
-
-// ====================
-// دوال الأيام الملغاة (Cancelled Days)
-// ====================
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD للأيام الملغاة (Cancelled Days)
+// ═══════════════════════════════════════════════════════════
 
 async function getAllCancelledDays() {
   try {
-    const client = initSupabase();
-    const { data, error } = await client
-      .from(SUPABASE_CONFIG.tables.cancelled)
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.CANCELLED_DAYS)
       .select('*')
-      .order('ts', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -141,334 +116,314 @@ async function getAllCancelledDays() {
   }
 }
 
-async function addCancelledDay(cancelledDay) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.cancelled)
-    .insert([cancelledDay])
-    .select();
+async function addCancelledDay(day) {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.CANCELLED_DAYS)
+      .insert([day])
+      .select();
 
-  if (error) {
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
     console.error('خطأ في إضافة يوم ملغى:', error);
     throw error;
   }
-
-  return data[0];
 }
 
-async function deleteCancelledDay(dayKey) {
+async function deleteCancelledDay(id) {
   try {
-    const client = initSupabase();
-    const { error } = await client
-      .from(SUPABASE_CONFIG.tables.cancelled)
+    const { error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.CANCELLED_DAYS)
       .delete()
-      .eq('daykey', dayKey);
+      .eq('id', id);
 
     if (error) throw error;
+    return true;
   } catch (error) {
-    console.error('خطأ في حذف اليوم الملغى:', error);
+    console.error('خطأ في حذف يوم ملغى:', error);
     throw error;
   }
 }
 
-// ====================
-// دوال الإعلانات (Announcements)
-// ====================
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD للإعلانات (Announcements)
+// ═══════════════════════════════════════════════════════════
 
 async function getAllAnnouncements() {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.annonces)
-    .select('*')
-    .order('ts', { ascending: false });
-
-  if (error) {
-    console.error('خطأ في جلب الإعلانات:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-async function addAnnouncement(announcement) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.annonces)
-    .insert([announcement])
-    .select();
-
-  if (error) {
-    console.error('خطأ في إضافة إعلان:', error);
-    throw error;
-  }
-
-  return data[0];
-}
-
-async function deleteAnnouncement(id) {
-  const client = initSupabase();
-  const { error } = await client
-    .from(SUPABASE_CONFIG.tables.annonces)
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('خطأ في حذف الإعلان:', error);
-    throw error;
-  }
-}
-
-// ====================
-// دوال السجل (Journal)
-// ====================
-
-async function getAllJournal() {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.journal)
-    .select('*')
-    .order('ts', { ascending: false })
-    .limit(100);
-
-  if (error) {
-    console.error('خطأ في جلب السجل:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-async function addJournalEntry(entry) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.journal)
-    .insert([entry])
-    .select();
-
-  if (error) {
-    console.error('خطأ في إضافة سجل:', error);
-    throw error;
-  }
-
-  return data[0];
-}
-
-// ====================
-// دوال الدخل (Income)
-// ====================
-
-async function getAllIncome() {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.income)
-    .select('*')
-    .order('ts', { ascending: false });
-
-  if (error) {
-    console.error('خطأ في جلب الدخل:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-async function addIncome(income) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.income)
-    .insert([income])
-    .select();
-
-  if (error) {
-    console.error('خطأ في إضافة دخل:', error);
-    throw error;
-  }
-
-  return data[0];
-}
-
-// ====================
-// دوال الديون (Debt)
-// ====================
-
-async function getAllDebt() {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.debt)
-    .select('*')
-    .order('ts', { ascending: false });
-
-  if (error) {
-    console.error('خطأ في جلب الديون:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-async function addDebt(debt) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.debt)
-    .insert([debt])
-    .select();
-
-  if (error) {
-    console.error('خطأ في إضافة دين:', error);
-    throw error;
-  }
-
-  return data[0];
-}
-
-async function updateDebt(id, updates) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.debt)
-    .update(updates)
-    .eq('id', id)
-    .select();
-
-  if (error) {
-    console.error('خطأ في تحديث الدين:', error);
-    throw error;
-  }
-
-  return data[0];
-}
-
-async function deleteDebt(id) {
-  const client = initSupabase();
-  const { error } = await client
-    .from(SUPABASE_CONFIG.tables.debt)
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('خطأ في حذف الدين:', error);
-    throw error;
-  }
-}
-
-// ====================
-// دوال أيام العمل (Work Days)
-// ====================
-
-async function getAllWorkDays() {
   try {
-    const client = initSupabase();
-    const { data, error } = await client
-      .from(SUPABASE_CONFIG.tables.workdays)
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.ANNOUNCEMENTS)
       .select('*')
-      .order('dayofweek', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
+  } catch (error) {
+    console.error('خطأ في جلب الإعلانات:', error);
+    return [];
+  }
+}
+
+async function addAnnouncement(announcement) {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.ANNOUNCEMENTS)
+      .insert([announcement])
+      .select();
+
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
+    console.error('خطأ في إضافة إعلان:', error);
+    throw error;
+  }
+}
+
+async function deleteAnnouncement(id) {
+  try {
+    const { error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.ANNOUNCEMENTS)
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('خطأ في حذف إعلان:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD للسجل (Journal)
+// ═══════════════════════════════════════════════════════════
+
+async function getAllJournalEntries() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.JOURNAL)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('خطأ في جلب السجل:', error);
+    return [];
+  }
+}
+
+async function addJournalEntry(entry) {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.JOURNAL)
+      .insert([entry])
+      .select();
+
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
+    console.error('خطأ في إضافة مدخل للسجل:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD للدخل (Income)
+// ═══════════════════════════════════════════════════════════
+
+async function getAllIncomeEntries() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.INCOME)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('خطأ في جلب الدخل:', error);
+    return [];
+  }
+}
+
+async function addIncomeEntry(entry) {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.INCOME)
+      .insert([entry])
+      .select();
+
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
+    console.error('خطأ في إضافة دخل:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD للديون (Debt)
+// ═══════════════════════════════════════════════════════════
+
+async function getAllDebtEntries() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.DEBT)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('خطأ في جلب الديون:', error);
+    return [];
+  }
+}
+
+async function addDebtEntry(entry) {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.DEBT)
+      .insert([entry])
+      .select();
+
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
+    console.error('خطأ في إضافة دين:', error);
+    throw error;
+  }
+}
+
+async function updateDebtEntry(id, updates) {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.DEBT)
+      .update(updates)
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+    return data ? data[0] : null;
+  } catch (error) {
+    console.error('خطأ في تحديث دين:', error);
+    throw error;
+  }
+}
+
+async function deleteDebtEntry(id) {
+  try {
+    const { error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.DEBT)
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('خطأ في حذف دين:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// دوال CRUD لأيام العمل (Workdays)
+// ═══════════════════════════════════════════════════════════
+
+async function getAllWorkdays() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.WORKDAYS)
+      .select('*')
+      .order('day_of_week', { ascending: true });
+
+    if (error) throw error;
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(w => ({
+      dayOfWeek: w.day_of_week,
+      dayName: w.day_name,
+      capacity: w.capacity
+    }));
   } catch (error) {
     console.error('خطأ في جلب أيام العمل:', error);
     return [];
   }
 }
 
-async function addWorkDay(workday) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.workdays)
-    .insert([workday])
-    .select();
+async function saveAllWorkdays(workdays) {
+  try {
+    // حذف جميع أيام العمل القديمة
+    await supabaseClient
+      .from(SUPABASE_CONFIG.tables.WORKDAYS)
+      .delete()
+      .neq('id', 0); // حذف الكل
 
-  if (error) {
-    console.error('خطأ في إضافة يوم عمل:', error);
-    throw error;
-  }
+    // إضافة أيام العمل الجديدة
+    if (workdays && workdays.length > 0) {
+      const data = workdays.map(w => ({
+        day_of_week: w.dayOfWeek,
+        day_name: w.dayName,
+        capacity: w.capacity
+      }));
 
-  return data[0];
-}
+      const { error } = await supabaseClient
+        .from(SUPABASE_CONFIG.tables.WORKDAYS)
+        .insert(data);
 
-async function updateWorkDay(dayOfWeek, updates) {
-  const client = initSupabase();
-  const { data, error } = await client
-    .from(SUPABASE_CONFIG.tables.workdays)
-    .update(updates)
-    .eq('dayofweek', dayOfWeek)
-    .select();
-
-  if (error) {
-    console.error('خطأ في تحديث يوم العمل:', error);
-    throw error;
-  }
-
-  return data[0];
-}
-
-async function deleteWorkDay(dayOfWeek) {
-  const client = initSupabase();
-  const { error } = await client
-    .from(SUPABASE_CONFIG.tables.workdays)
-    .delete()
-    .eq('dayofweek', dayOfWeek);
-
-  if (error) {
-    console.error('خطأ في حذف يوم العمل:', error);
-    throw error;
-  }
-}
-
-async function saveAllWorkDays(workdays) {
-  const client = initSupabase();
-
-  await client.from(SUPABASE_CONFIG.tables.workdays).delete().neq('dayofweek', -1);
-
-  if (workdays.length > 0) {
-    const { error } = await client
-      .from(SUPABASE_CONFIG.tables.workdays)
-      .insert(workdays);
-
-    if (error) {
-      console.error('خطأ في حفظ أيام العمل:', error);
-      throw error;
+      if (error) throw error;
     }
+
+    console.log('💾 تم حفظ أيام العمل في Supabase');
+    return true;
+  } catch (error) {
+    console.error('خطأ في حفظ أيام العمل:', error);
+    throw error;
   }
 }
 
-// ====================
-// الاشتراك في التحديثات الفورية (Real-time)
-// ====================
+// ═══════════════════════════════════════════════════════════
+// تصدير الدوال
+// ═══════════════════════════════════════════════════════════
 
-function subscribeToBookings(callback) {
-  const client = initSupabase();
-
-  const subscription = client
-    .channel('bookings-channel')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: SUPABASE_CONFIG.tables.bookings },
-      (payload) => {
-        console.log('تحديث في الحجوزات:', payload);
-        callback(payload);
-      }
-    )
-    .subscribe();
-
-  return subscription;
-}
-
-function subscribeToAnnouncements(callback) {
-  const client = initSupabase();
-
-  const subscription = client
-    .channel('announcements-channel')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: SUPABASE_CONFIG.tables.annonces },
-      (payload) => {
-        console.log('تحديث في الإعلانات:', payload);
-        callback(payload);
-      }
-    )
-    .subscribe();
-
-  return subscription;
-}
+window.supabaseAPI = {
+  init: initSupabase,
+  bookings: {
+    getAll: getAllBookings,
+    add: addBooking,
+    update: updateBooking,
+    delete: deleteBooking
+  },
+  cancelledDays: {
+    getAll: getAllCancelledDays,
+    add: addCancelledDay,
+    delete: deleteCancelledDay
+  },
+  announcements: {
+    getAll: getAllAnnouncements,
+    add: addAnnouncement,
+    delete: deleteAnnouncement
+  },
+  journal: {
+    getAll: getAllJournalEntries,
+    add: addJournalEntry
+  },
+  income: {
+    getAll: getAllIncomeEntries,
+    add: addIncomeEntry
+  },
+  debt: {
+    getAll: getAllDebtEntries,
+    add: addDebtEntry,
+    update: updateDebtEntry,
+    delete: deleteDebtEntry
+  },
+  workdays: {
+    getAll: getAllWorkdays,
+    saveAll: saveAllWorkdays
+  }
+};
 
 console.log('📦 تم تحميل عميل Supabase');
