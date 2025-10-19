@@ -8,8 +8,11 @@
 const LS_KEYS = {
   BOOK: 'bookings',
   CANCELLED: 'cancelled',
+  CAN: 'cancelled', // اختصار للتوافق مع main.js
   ANNONCES: 'announcements',
+  ANN: 'announcements', // اختصار للتوافق مع main.js
   JOURNAL: 'journal',
+  JOUR: 'journal', // اختصار للتوافق مع main.js
   INCOME: 'income',
   DEBT: 'debt',
   WORKDAYS: 'workdays',
@@ -140,19 +143,22 @@ function saveLocal(key, value) {
 function load(key) {
   switch (key) {
     case LS_KEYS.BOOK:
-      return localCache.bookings;
+      return localCache.bookings || [];
     case LS_KEYS.CANCELLED:
-      return localCache.cancelled;
+    case LS_KEYS.CAN:
+      return localCache.cancelled || [];
     case LS_KEYS.ANNONCES:
-      return localCache.announcements;
+    case LS_KEYS.ANN:
+      return localCache.announcements || [];
     case LS_KEYS.JOURNAL:
-      return localCache.journal;
+    case LS_KEYS.JOUR:
+      return localCache.journal || [];
     case LS_KEYS.INCOME:
-      return localCache.income;
+      return localCache.income || [];
     case LS_KEYS.DEBT:
-      return localCache.debt;
+      return localCache.debt || [];
     case LS_KEYS.WORKDAYS:
-      return localCache.workdays;
+      return localCache.workdays || [];
     case LS_KEYS.CREDS:
       // بيانات الدخول تبقى في localStorage
       return loadLocal('bp_creds') || { user: 'younes', pass: 'younes' };
@@ -175,6 +181,7 @@ async function save(key, value) {
         }
         break;
       case LS_KEYS.CANCELLED:
+      case LS_KEYS.CAN:
         localCache.cancelled = value;
         if (isSupabaseReady) {
           await syncCancelledToSupabase(value);
@@ -183,6 +190,7 @@ async function save(key, value) {
         }
         break;
       case LS_KEYS.ANNONCES:
+      case LS_KEYS.ANN:
         localCache.announcements = value;
         if (isSupabaseReady) {
           await syncAnnouncementsToSupabase(value);
@@ -191,6 +199,7 @@ async function save(key, value) {
         }
         break;
       case LS_KEYS.JOURNAL:
+      case LS_KEYS.JOUR:
         localCache.journal = value;
         if (isSupabaseReady) {
           await syncJournalToSupabase(value);
