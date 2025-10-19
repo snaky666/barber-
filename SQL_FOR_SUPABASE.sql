@@ -10,18 +10,20 @@ CREATE TABLE IF NOT EXISTS bookings (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   phone TEXT NOT NULL,
-  day_key TEXT NOT NULL,
-  time_slot TEXT NOT NULL,
+  daykey TEXT NOT NULL,
+  timeslot TEXT NOT NULL,
   completed BOOLEAN DEFAULT FALSE,
   paid BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- فهرس للبحث السريع
-CREATE INDEX IF NOT EXISTS idx_bookings_day_key ON bookings(day_key);
+CREATE INDEX IF NOT EXISTS idx_bookings_daykey ON bookings(daykey);
 CREATE INDEX IF NOT EXISTS idx_bookings_completed ON bookings(completed);
 
--- سياسات الأمان (RLS) - السماح بالقراءة والكتابة للجميع
+-- سياسات الأمان (RLS)
+-- ⚠️ ملاحظة أمنية: السياسات الحالية تسمح بالوصول الكامل للجميع
+-- هذا مناسب لمشاريع صغيرة خاصة، ولكن للإنتاج يُنصح بإضافة مصادقة
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow public read" ON bookings;
@@ -42,7 +44,7 @@ CREATE POLICY "Allow public delete" ON bookings FOR DELETE USING (true);
 
 CREATE TABLE IF NOT EXISTS cancelled_days (
   id TEXT PRIMARY KEY,
-  day_key TEXT NOT NULL UNIQUE,
+  daykey TEXT NOT NULL UNIQUE,
   reason TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -124,13 +126,13 @@ CREATE TABLE IF NOT EXISTS income (
   id TEXT PRIMARY KEY,
   amount DECIMAL(10, 2) NOT NULL,
   source TEXT NOT NULL,
-  day_key TEXT NOT NULL,
+  daykey TEXT NOT NULL,
   timestamp TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- فهرس للبحث السريع
-CREATE INDEX IF NOT EXISTS idx_income_day_key ON income(day_key);
+CREATE INDEX IF NOT EXISTS idx_income_daykey ON income(daykey);
 
 -- سياسات الأمان
 ALTER TABLE income ENABLE ROW LEVEL SECURITY;
@@ -156,14 +158,14 @@ CREATE TABLE IF NOT EXISTS debt (
   name TEXT NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
   paid BOOLEAN DEFAULT FALSE,
-  day_key TEXT NOT NULL,
+  daykey TEXT NOT NULL,
   timestamp TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- فهرس للبحث السريع
 CREATE INDEX IF NOT EXISTS idx_debt_paid ON debt(paid);
-CREATE INDEX IF NOT EXISTS idx_debt_day_key ON debt(day_key);
+CREATE INDEX IF NOT EXISTS idx_debt_daykey ON debt(daykey);
 
 -- سياسات الأمان
 ALTER TABLE debt ENABLE ROW LEVEL SECURITY;

@@ -2,7 +2,8 @@
 // إعدادات Supabase
 
 const SUPABASE_CONFIG = {
-  // يجب على المستخدم إضافة هذه القيم من مشروعه في Supabase
+  // ⚠️ مهم: يجب على المستخدم إضافة هذه القيم من مشروعه في Supabase
+  // 🔒 احتفظ بهذه المفاتيح سرية ولا تشاركها علناً
   url: '', // مثال: https://xxxxx.supabase.co
   anonKey: '', // مثال: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   

@@ -44,7 +44,13 @@ async function getAllBookings() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(b => ({
+      ...b,
+      dayKey: b.daykey,
+      timeSlot: b.timeslot
+    }));
   } catch (error) {
     console.error('خطأ في جلب الحجوزات:', error);
     return [];
@@ -53,13 +59,28 @@ async function getAllBookings() {
 
 async function addBooking(booking) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbBooking = {
+      ...booking,
+      daykey: booking.dayKey,
+      timeslot: booking.timeSlot
+    };
+    delete dbBooking.dayKey;
+    delete dbBooking.timeSlot;
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.BOOKINGS)
-      .insert([booking])
+      .insert([dbBooking])
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.dayKey = result.daykey;
+      result.timeSlot = result.timeslot;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في إضافة حجز:', error);
     throw error;
@@ -68,14 +89,31 @@ async function addBooking(booking) {
 
 async function updateBooking(id, updates) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbUpdates = { ...updates };
+    if (dbUpdates.dayKey) {
+      dbUpdates.daykey = dbUpdates.dayKey;
+      delete dbUpdates.dayKey;
+    }
+    if (dbUpdates.timeSlot) {
+      dbUpdates.timeslot = dbUpdates.timeSlot;
+      delete dbUpdates.timeSlot;
+    }
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.BOOKINGS)
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.dayKey = result.daykey;
+      result.timeSlot = result.timeslot;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في تحديث حجز:', error);
     throw error;
@@ -109,7 +147,12 @@ async function getAllCancelledDays() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(d => ({
+      ...d,
+      dayKey: d.daykey
+    }));
   } catch (error) {
     console.error('خطأ في جلب الأيام الملغاة:', error);
     return [];
@@ -118,13 +161,25 @@ async function getAllCancelledDays() {
 
 async function addCancelledDay(day) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbDay = {
+      ...day,
+      daykey: day.dayKey
+    };
+    delete dbDay.dayKey;
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.CANCELLED_DAYS)
-      .insert([day])
+      .insert([dbDay])
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.dayKey = result.daykey;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في إضافة يوم ملغى:', error);
     throw error;
@@ -238,10 +293,15 @@ async function getAllIncomeEntries() {
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.INCOME)
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false});
 
     if (error) throw error;
-    return data || [];
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(i => ({
+      ...i,
+      dayKey: i.daykey
+    }));
   } catch (error) {
     console.error('خطأ في جلب الدخل:', error);
     return [];
@@ -250,13 +310,25 @@ async function getAllIncomeEntries() {
 
 async function addIncomeEntry(entry) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbEntry = {
+      ...entry,
+      daykey: entry.dayKey
+    };
+    delete dbEntry.dayKey;
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.INCOME)
-      .insert([entry])
+      .insert([dbEntry])
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.dayKey = result.daykey;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في إضافة دخل:', error);
     throw error;
@@ -275,7 +347,12 @@ async function getAllDebtEntries() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(d => ({
+      ...d,
+      dayKey: d.daykey
+    }));
   } catch (error) {
     console.error('خطأ في جلب الديون:', error);
     return [];
@@ -284,13 +361,25 @@ async function getAllDebtEntries() {
 
 async function addDebtEntry(entry) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbEntry = {
+      ...entry,
+      daykey: entry.dayKey
+    };
+    delete dbEntry.dayKey;
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.DEBT)
-      .insert([entry])
+      .insert([dbEntry])
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.dayKey = result.daykey;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في إضافة دين:', error);
     throw error;
@@ -299,14 +388,26 @@ async function addDebtEntry(entry) {
 
 async function updateDebtEntry(id, updates) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbUpdates = { ...updates };
+    if (dbUpdates.dayKey) {
+      dbUpdates.daykey = dbUpdates.dayKey;
+      delete dbUpdates.dayKey;
+    }
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.DEBT)
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.dayKey = result.daykey;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في تحديث دين:', error);
     throw error;
