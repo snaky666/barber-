@@ -113,26 +113,29 @@
 
 <script>
 // تحديث القائمة عند تحميل الصفحة - مع انتظار تحميل البيانات من Supabase
-window.addEventListener('DOMContentLoaded', () => {
-  // محاولة تحميل القائمة فوراً
+window.addEventListener('DOMContentLoaded', async () => {
+  // انتظار تحميل طبقة البيانات
+  if (typeof initDataLayer === 'function') {
+    try {
+      await initDataLayer();
+    } catch (error) {
+      console.error('خطأ في تحميل البيانات:', error);
+    }
+  }
+  
+  // تحديث القائمة بعد التحميل
   if (typeof populateAvailableDays === 'function') {
     populateAvailableDays();
   }
   
-  // محاولة ثانية بعد ثانية واحدة (في حالة تأخر تحميل البيانات)
+  // محاولة إضافية بعد ثانية للتأكد
   setTimeout(() => {
     if (typeof populateAvailableDays === 'function') {
       populateAvailableDays();
     }
-  }, 1000);
-  
-  // محاولة ثالثة بعد ثانيتين
-  setTimeout(() => {
-    if (typeof populateAvailableDays === 'function') {
-      populateAvailableDays();
-    }
-  }, 2000);
+  }, 500);
 });
+</script>
 
 // إرسال النموذج
 document.getElementById('resForm').addEventListener('submit', function(e){

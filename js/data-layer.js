@@ -450,3 +450,20 @@ window.saveCreds = async function(credentials) {
 };
 
 console.log('📊 تم تحميل طبقة البيانات (Supabase)');
+
+// تهيئة تلقائية عند التحميل
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initDataLayer().then(() => {
+      console.log('✅ طبقة البيانات جاهزة وتم تحميل البيانات من Supabase');
+    }).catch(error => {
+      console.error('❌ خطأ في تهيئة طبقة البيانات:', error);
+    });
+  });
+} else {
+  initDataLayer().then(() => {
+    console.log('✅ طبقة البيانات جاهزة وتم تحميل البيانات من Supabase');
+  }).catch(error => {
+    console.error('❌ خطأ في تهيئة طبقة البيانات:', error);
+  });
+}
