@@ -30,7 +30,8 @@ let localCache = {
   journal: [],
   income: [],
   debt: [],
-  workdays: []
+  workdays: [],
+  credentials: null // سيتم تحميلها من Supabase
 };
 
 let isSupabaseReady = false;
@@ -57,14 +58,15 @@ async function initDataLayer() {
     isSupabaseReady = true;
 
     // تحميل جميع البيانات من Supabase
-    const [bookings, cancelled, announcements, journal, income, debt, workdays] = await Promise.all([
+    const [bookings, cancelled, announcements, journal, income, debt, workdays, credentials] = await Promise.all([
       window.supabaseAPI.bookings.getAll(),
       window.supabaseAPI.cancelledDays.getAll(),
       window.supabaseAPI.announcements.getAll(),
       window.supabaseAPI.journal.getAll(),
       window.supabaseAPI.income.getAll(),
       window.supabaseAPI.debt.getAll(),
-      window.supabaseAPI.workdays.getAll()
+      window.supabaseAPI.workdays.getAll(),
+      window.supabaseAPI.adminCredentials.get()
     ]);
 
     // حفظ في الذاكرة المؤقتة
@@ -75,6 +77,7 @@ async function initDataLayer() {
     localCache.income = income || [];
     localCache.debt = debt || [];
     localCache.workdays = workdays || [];
+    localCache.credentials = credentials || { user: 'younes', pass: 'younes' };
 
     // إذا لم تكن هناك أيام عمل، استخدم القيم الافتراضية
     if (localCache.workdays.length === 0) {
@@ -160,8 +163,8 @@ function load(key) {
     case LS_KEYS.WORKDAYS:
       return localCache.workdays || [];
     case LS_KEYS.CREDS:
-      // بيانات الدخول تبقى في localStorage
-      return loadLocal('bp_creds') || { user: 'younes', pass: 'younes' };
+      // بيانات الدخول من Supabase
+      return localCache.credentials || { user: 'younes', pass: 'younes' };
     default:
       return null;
   }
@@ -232,8 +235,13 @@ async function save(key, value) {
         }
         break;
       case LS_KEYS.CREDS:
-        // بيانات الدخول تبقى في localStorage فقط
-        saveLocal('bp_creds', value);
+        // بيانات الدخول تُحفظ في Supabase
+        localCache.credentials = value;
+        if (isSupabaseReady) {
+          await window.supabaseAPI.adminCredentials.update(value);
+        } else {
+          saveLocal('bp_creds', value);
+        }
         break;
     }
     

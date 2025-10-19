@@ -486,6 +486,75 @@ async function saveAllWorkdays(workdays) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// دوال CRUD لبيانات المستخدم الإداري (Admin Credentials)
+// ═══════════════════════════════════════════════════════════
+
+async function getAdminCredentials() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.ADMIN_CREDENTIALS)
+      .select('*')
+      .limit(1)
+      .single();
+
+    if (error) {
+      // إذا لم توجد بيانات، نرجع القيم الافتراضية
+      if (error.code === 'PGRST116') {
+        return { user: 'younes', pass: 'younes' };
+      }
+      throw error;
+    }
+    
+    return data || { user: 'younes', pass: 'younes' };
+  } catch (error) {
+    console.error('خطأ في جلب بيانات المستخدم:', error);
+    return { user: 'younes', pass: 'younes' };
+  }
+}
+
+async function updateAdminCredentials(credentials) {
+  try {
+    // التحقق من وجود سجل
+    const { data: existing } = await supabaseClient
+      .from(SUPABASE_CONFIG.tables.ADMIN_CREDENTIALS)
+      .select('id')
+      .limit(1)
+      .single();
+
+    if (existing) {
+      // تحديث السجل الموجود
+      const { data, error } = await supabaseClient
+        .from(SUPABASE_CONFIG.tables.ADMIN_CREDENTIALS)
+        .update({
+          user: credentials.user,
+          pass: credentials.pass,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id)
+        .select();
+
+      if (error) throw error;
+      return data ? data[0] : null;
+    } else {
+      // إنشاء سجل جديد
+      const { data, error } = await supabaseClient
+        .from(SUPABASE_CONFIG.tables.ADMIN_CREDENTIALS)
+        .insert([{
+          user: credentials.user,
+          pass: credentials.pass
+        }])
+        .select();
+
+      if (error) throw error;
+      return data ? data[0] : null;
+    }
+  } catch (error) {
+    console.error('خطأ في تحديث بيانات المستخدم:', error);
+    throw error;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // تصدير الدوال
 // ═══════════════════════════════════════════════════════════
 
@@ -524,6 +593,10 @@ window.supabaseAPI = {
   workdays: {
     getAll: getAllWorkdays,
     saveAll: saveAllWorkdays
+  },
+  adminCredentials: {
+    get: getAdminCredentials,
+    update: updateAdminCredentials
   }
 };
 
