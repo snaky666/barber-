@@ -47,7 +47,7 @@ async function initDataLayer() {
   try {
     // تهيئة Supabase
     const client = await window.supabaseAPI.init();
-    
+
     if (!client) {
       console.warn('⚠️ فشل الاتصال بـ Supabase - سيتم استخدام localStorage');
       loadFromLocalStorage();
@@ -96,7 +96,7 @@ async function initDataLayer() {
     console.log('✅ تم تحميل البيانات بنجاح');
   } catch (error) {
     console.error('❌ خطأ في تحميل البيانات:', error);
-    
+
     // استخدام localStorage كنسخة احتياطية
     loadFromLocalStorage();
     isDataLoaded = true;
@@ -106,7 +106,7 @@ async function initDataLayer() {
 // تحميل من localStorage (نسخة احتياطية)
 function loadFromLocalStorage() {
   console.log('📦 تحميل البيانات من localStorage...');
-  
+
   localCache.bookings = loadLocal('bp_bookings') || [];
   localCache.cancelled = loadLocal('bp_cancelled') || [];
   localCache.announcements = loadLocal('bp_annonces') || [];
@@ -244,7 +244,7 @@ async function save(key, value) {
         }
         break;
     }
-    
+
     console.log('💾 تم حفظ البيانات:', key);
   } catch (error) {
     console.error('خطأ في حفظ البيانات:', key, error);
@@ -264,7 +264,7 @@ async function syncBookingsToSupabase(bookings) {
     for (const booking of oldBookings) {
       await window.supabaseAPI.bookings.delete(booking.id);
     }
-    
+
     // إضافة الحجوزات الجديدة
     for (const booking of bookings) {
       await window.supabaseAPI.bookings.add(booking);
@@ -281,7 +281,7 @@ async function syncCancelledToSupabase(cancelled) {
     for (const day of oldCancelled) {
       await window.supabaseAPI.cancelledDays.delete(day.id);
     }
-    
+
     for (const day of cancelled) {
       await window.supabaseAPI.cancelledDays.add(day);
     }
@@ -297,7 +297,7 @@ async function syncAnnouncementsToSupabase(announcements) {
     for (const ann of oldAnnouncements) {
       await window.supabaseAPI.announcements.delete(ann.id);
     }
-    
+
     for (const ann of announcements) {
       await window.supabaseAPI.announcements.add(ann);
     }
@@ -313,7 +313,7 @@ async function syncJournalToSupabase(journal) {
     for (const entry of oldJournal) {
       // لا يوجد حذف في السجل، فقط إضافة
     }
-    
+
     for (const entry of journal) {
       // التحقق من عدم وجوده مسبقاً
       const exists = oldJournal.find(e => e.id === entry.id);
@@ -333,7 +333,7 @@ async function syncIncomeToSupabase(income) {
     for (const entry of oldIncome) {
       // لا يوجد حذف في الدخل، فقط إضافة
     }
-    
+
     for (const entry of income) {
       const exists = oldIncome.find(e => e.id === entry.id);
       if (!exists) {
@@ -352,7 +352,7 @@ async function syncDebtToSupabase(debt) {
     for (const entry of oldDebt) {
       await window.supabaseAPI.debt.delete(entry.id);
     }
-    
+
     for (const entry of debt) {
       await window.supabaseAPI.debt.add(entry);
     }
@@ -431,13 +431,22 @@ function saveCredentials(credentials) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// التهيئة عند تحميل الصفحة
+// تصدير الدوال للاستخدام العام
 // ═══════════════════════════════════════════════════════════
 
-initDataLayer().then(() => {
-  console.log('✅ طبقة البيانات جاهزة وتم تحميل البيانات من Supabase');
-}).catch(err => {
-  console.error('❌ خطأ في تهيئة طبقة البيانات:', err);
-});
+window.load = load;
+window.save = save;
+
+// دوال بيانات الدخول (للتوافق مع الكود القديم)
+window.creds = async function() {
+  if (isSupabaseReady && localCache.credentials) {
+    return localCache.credentials;
+  }
+  return { user: 'younes', pass: 'younes' };
+};
+
+window.saveCreds = async function(credentials) {
+  await save('bp_creds', credentials);
+};
 
 console.log('📊 تم تحميل طبقة البيانات (Supabase)');
