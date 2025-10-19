@@ -574,7 +574,7 @@ function openLoginModal(){ document.getElementById('loginModal') && document.get
 function closeLoginModal(){ document.getElementById('loginModal') && document.getElementById('loginModal').classList.add('hidden'); }
 function doModalLogin(){
   const u = document.getElementById('modalUser').value.trim(); const p = document.getElementById('modalPass').value.trim();
-  const c = creds();
+  const c = load(LS_KEYS.CREDS);
   if(u === c.user && p === c.pass){ // success
     closeLoginModal();
     // Store login state and redirect
@@ -614,7 +614,7 @@ function wrapNavLinks(){
 window.addEventListener('DOMContentLoaded', wrapNavLinks);
 
 // change credentials
-function changeCredentials(){ const nu=document.getElementById('newUser').value.trim(); const np=document.getElementById('newPass').value.trim(); if(!nu||!np) return alert('Remplir'); saveCreds({user:nu, pass:np}); alert('Identifiants mis à jour'); log('Changement cred'); }
+function changeCredentials(){ const nu=document.getElementById('newUser').value.trim(); const np=document.getElementById('newPass').value.trim(); if(!nu||!np) return alert('Remplir'); save(LS_KEYS.CREDS, {user:nu, pass:np}); alert('Identifiants mis à jour'); log('Changement cred'); }
 
 // render journal (admin)
 function renderJournal(){ const el = document.getElementById('journalList'); if(!el) return; const j = load(LS_KEYS.JOUR); el.innerHTML = ''; j.forEach(it=>{ const d=new Date(it.ts); const node=document.createElement('div'); node.className='card'; node.innerHTML=`<div style="font-size:13px;color:var(--muted)">${d.toLocaleString()}</div><p>${it.msg}</p>`; el.appendChild(node); }); if(j.length===0) el.innerHTML='<p class="muted">Journal vide</p>'; }
