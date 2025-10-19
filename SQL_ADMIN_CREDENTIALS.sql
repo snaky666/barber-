@@ -8,7 +8,7 @@
 
 CREATE TABLE IF NOT EXISTS admin_credentials (
   id SERIAL PRIMARY KEY,
-  user TEXT NOT NULL,
+  "user" TEXT NOT NULL,
   pass TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -39,7 +39,7 @@ CREATE POLICY "Allow public delete" ON admin_credentials FOR DELETE USING (true)
 DELETE FROM admin_credentials;
 
 -- إدراج بيانات المستخدم الافتراضية
-INSERT INTO admin_credentials (user, pass) VALUES ('younes', 'younes');
+INSERT INTO admin_credentials ("user", pass) VALUES ('younes', 'younes');
 
 -- ═══════════════════════════════════════════════════════════
 -- ✅ انتهى السكريبت بنجاح
