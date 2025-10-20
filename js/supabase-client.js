@@ -62,15 +62,15 @@ async function addBooking(booking) {
   try {
     // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
     const dbBooking = {
-      ...booking,
-      daykey: booking.dayKey,
-      timeslot: booking.timeSlot
+      id: booking.id,
+      name: booking.name || '',
+      surname: booking.surname || '',
+      phone: booking.phone || '',
+      daykey: booking.dayKey || '',
+      timeslot: booking.timeSlot || '',
+      completed: booking.completed || false,
+      paid: booking.paid || false
     };
-    delete dbBooking.dayKey;
-    delete dbBooking.timeSlot;
-    delete dbBooking.createdAt;
-    delete dbBooking.dayLabel;
-    delete dbBooking.inProgress;
     
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.BOOKINGS)

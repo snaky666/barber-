@@ -9,6 +9,7 @@
 CREATE TABLE IF NOT EXISTS bookings (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  surname TEXT NOT NULL,
   phone TEXT NOT NULL,
   daykey TEXT NOT NULL,
   timeslot TEXT NOT NULL,
