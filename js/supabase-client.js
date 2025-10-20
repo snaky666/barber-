@@ -218,7 +218,13 @@ async function getAllAnnouncements() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(a => ({
+      ...a,
+      text: a.message,
+      ts: a.created_at
+    }));
   } catch (error) {
     console.error('خطأ في جلب الإعلانات:', error);
     return [];
@@ -227,13 +233,26 @@ async function getAllAnnouncements() {
 
 async function addAnnouncement(announcement) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbAnnouncement = {
+      id: announcement.id,
+      message: announcement.text || announcement.message,
+      type: announcement.type || 'user'
+    };
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.ANNOUNCEMENTS)
-      .insert([announcement])
+      .insert([dbAnnouncement])
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.text = result.message;
+      result.ts = result.created_at;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في إضافة إعلان:', error);
     throw error;
@@ -324,7 +343,10 @@ async function getAllIncomeEntries() {
     // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
     return (data || []).map(i => ({
       ...i,
-      dayKey: i.daykey
+      dayKey: i.daykey,
+      bookingId: i.booking_id,
+      clientName: i.client_name,
+      wasDebt: i.was_debt
     }));
   } catch (error) {
     console.error('خطأ في جلب الدخل:', error);
@@ -336,10 +358,14 @@ async function addIncomeEntry(entry) {
   try {
     // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
     const dbEntry = {
-      ...entry,
-      daykey: entry.dayKey
+      id: entry.id,
+      booking_id: entry.bookingId,
+      client_name: entry.clientName,
+      daykey: entry.dayKey,
+      amount: entry.amount,
+      timestamp: entry.ts || entry.timestamp,
+      was_debt: entry.wasDebt || false
     };
-    delete dbEntry.dayKey;
     
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.INCOME)
@@ -351,6 +377,10 @@ async function addIncomeEntry(entry) {
     const result = data ? data[0] : null;
     if (result) {
       result.dayKey = result.daykey;
+      result.bookingId = result.booking_id;
+      result.clientName = result.client_name;
+      result.wasDebt = result.was_debt;
+      result.ts = result.timestamp;
     }
     return result;
   } catch (error) {
@@ -375,7 +405,10 @@ async function getAllDebtEntries() {
     // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
     return (data || []).map(d => ({
       ...d,
-      dayKey: d.daykey
+      dayKey: d.daykey,
+      bookingId: d.booking_id,
+      dayLabel: d.daykey ? new Date(d.daykey + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
+      ts: d.timestamp
     }));
   } catch (error) {
     console.error('خطأ في جلب الديون:', error);
@@ -387,10 +420,16 @@ async function addDebtEntry(entry) {
   try {
     // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
     const dbEntry = {
-      ...entry,
-      daykey: entry.dayKey
+      id: entry.id,
+      booking_id: entry.bookingId,
+      name: entry.name,
+      surname: entry.surname,
+      phone: entry.phone || '',
+      daykey: entry.dayKey,
+      amount: entry.amount,
+      timestamp: entry.ts || entry.timestamp,
+      paid: entry.paid || false
     };
-    delete dbEntry.dayKey;
     
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.DEBT)
@@ -402,6 +441,9 @@ async function addDebtEntry(entry) {
     const result = data ? data[0] : null;
     if (result) {
       result.dayKey = result.daykey;
+      result.bookingId = result.booking_id;
+      result.dayLabel = result.daykey ? new Date(result.daykey + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      result.ts = result.timestamp;
     }
     return result;
   } catch (error) {

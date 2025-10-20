@@ -1,6 +1,9 @@
 -- SQL_FOR_SUPABASE.sql
 -- سكريبت إنشاء قاعدة البيانات لنظام حجز صالون الحلاقة Mohand
 -- يجب تشغيل هذا السكريبت في Supabase SQL Editor
+-- 
+-- 📋 هذا السكريبت يتضمن جميع الحقول المستخدمة في التطبيق
+-- 🔧 محدّث ليشمل جميع الوظائف بدون استثناء
 
 -- ═══════════════════════════════════════════════════════════
 -- 1. جدول الحجوزات (Bookings)
@@ -10,9 +13,9 @@ CREATE TABLE IF NOT EXISTS bookings (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   surname TEXT NOT NULL,
-  phone TEXT NOT NULL,
+  phone TEXT DEFAULT '',
   daykey TEXT NOT NULL,
-  timeslot TEXT NOT NULL,
+  timeslot TEXT DEFAULT '',
   completed BOOLEAN DEFAULT FALSE,
   paid BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -21,6 +24,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 -- فهرس للبحث السريع
 CREATE INDEX IF NOT EXISTS idx_bookings_daykey ON bookings(daykey);
 CREATE INDEX IF NOT EXISTS idx_bookings_completed ON bookings(completed);
+CREATE INDEX IF NOT EXISTS idx_bookings_paid ON bookings(paid);
 
 -- سياسات الأمان (RLS)
 -- ⚠️ ملاحظة أمنية: السياسات الحالية تسمح بالوصول الكامل للجميع
@@ -46,7 +50,7 @@ CREATE POLICY "Allow public delete" ON bookings FOR DELETE USING (true);
 CREATE TABLE IF NOT EXISTS cancelled_days (
   id TEXT PRIMARY KEY,
   daykey TEXT NOT NULL UNIQUE,
-  reason TEXT,
+  reason TEXT DEFAULT '',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -72,8 +76,12 @@ CREATE POLICY "Allow public delete" ON cancelled_days FOR DELETE USING (true);
 CREATE TABLE IF NOT EXISTS announcements (
   id TEXT PRIMARY KEY,
   message TEXT NOT NULL,
+  type TEXT DEFAULT 'user',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- فهرس للبحث حسب النوع
+CREATE INDEX IF NOT EXISTS idx_announcements_type ON announcements(type);
 
 -- سياسات الأمان
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
@@ -103,6 +111,7 @@ CREATE TABLE IF NOT EXISTS journal (
 
 -- فهرس للترتيب الزمني
 CREATE INDEX IF NOT EXISTS idx_journal_timestamp ON journal(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_journal_created_at ON journal(created_at DESC);
 
 -- سياسات الأمان
 ALTER TABLE journal ENABLE ROW LEVEL SECURITY;
@@ -125,15 +134,19 @@ CREATE POLICY "Allow public delete" ON journal FOR DELETE USING (true);
 
 CREATE TABLE IF NOT EXISTS income (
   id TEXT PRIMARY KEY,
-  amount DECIMAL(10, 2) NOT NULL,
-  source TEXT NOT NULL,
+  booking_id TEXT,
+  client_name TEXT NOT NULL,
   daykey TEXT NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
   timestamp TEXT NOT NULL,
+  was_debt BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- فهرس للبحث السريع
 CREATE INDEX IF NOT EXISTS idx_income_daykey ON income(daykey);
+CREATE INDEX IF NOT EXISTS idx_income_booking_id ON income(booking_id);
+CREATE INDEX IF NOT EXISTS idx_income_timestamp ON income(timestamp DESC);
 
 -- سياسات الأمان
 ALTER TABLE income ENABLE ROW LEVEL SECURITY;
@@ -156,17 +169,21 @@ CREATE POLICY "Allow public delete" ON income FOR DELETE USING (true);
 
 CREATE TABLE IF NOT EXISTS debt (
   id TEXT PRIMARY KEY,
+  booking_id TEXT,
   name TEXT NOT NULL,
-  amount DECIMAL(10, 2) NOT NULL,
-  paid BOOLEAN DEFAULT FALSE,
+  surname TEXT NOT NULL,
+  phone TEXT DEFAULT '',
   daykey TEXT NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
   timestamp TEXT NOT NULL,
+  paid BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- فهرس للبحث السريع
 CREATE INDEX IF NOT EXISTS idx_debt_paid ON debt(paid);
 CREATE INDEX IF NOT EXISTS idx_debt_daykey ON debt(daykey);
+CREATE INDEX IF NOT EXISTS idx_debt_booking_id ON debt(booking_id);
 
 -- سياسات الأمان
 ALTER TABLE debt ENABLE ROW LEVEL SECURITY;
@@ -230,8 +247,40 @@ INSERT INTO workdays (day_of_week, day_name, capacity) VALUES
   (6, 'Samedi', 5);
 
 -- ═══════════════════════════════════════════════════════════
--- ✅ انتهى السكريبت بنجاح
+-- 9. ملخص البنية
 -- ═══════════════════════════════════════════════════════════
 
 -- للتحقق من إنشاء الجداول بنجاح:
-SELECT 'تم إنشاء جميع الجداول بنجاح! ✅' AS status;
+SELECT 
+  'تم إنشاء جميع الجداول بنجاح! ✅' AS status,
+  (SELECT COUNT(*) FROM bookings) AS bookings_count,
+  (SELECT COUNT(*) FROM cancelled_days) AS cancelled_days_count,
+  (SELECT COUNT(*) FROM announcements) AS announcements_count,
+  (SELECT COUNT(*) FROM journal) AS journal_count,
+  (SELECT COUNT(*) FROM income) AS income_count,
+  (SELECT COUNT(*) FROM debt) AS debt_count,
+  (SELECT COUNT(*) FROM workdays) AS workdays_count;
+
+-- ═══════════════════════════════════════════════════════════
+-- ملاحظات مهمة:
+-- ═══════════════════════════════════════════════════════════
+-- 
+-- 📌 تطابق الحقول بين التطبيق وقاعدة البيانات:
+-- 
+-- التطبيق (camelCase)     →  قاعدة البيانات (snake_case)
+-- ─────────────────────────────────────────────────────────
+-- dayKey                   →  daykey
+-- timeSlot                 →  timeslot
+-- createdAt                →  created_at
+-- bookingId                →  booking_id
+-- clientName               →  client_name
+-- wasDebt                  →  was_debt
+-- dayOfWeek                →  day_of_week
+-- dayName                  →  day_name
+-- msg                      →  action (journal)
+-- ts                       →  timestamp
+-- text                     →  message (announcements)
+-- 
+-- 🔄 التحويل يتم تلقائياً بواسطة: supabase-client.js
+-- 
+-- ═══════════════════════════════════════════════════════════
