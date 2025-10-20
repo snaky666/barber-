@@ -49,7 +49,8 @@ async function getAllBookings() {
     return (data || []).map(b => ({
       ...b,
       dayKey: b.daykey,
-      timeSlot: b.timeslot
+      timeSlot: b.timeslot,
+      createdAt: b.created_at
     }));
   } catch (error) {
     console.error('خطأ في جلب الحجوزات:', error);
@@ -67,6 +68,9 @@ async function addBooking(booking) {
     };
     delete dbBooking.dayKey;
     delete dbBooking.timeSlot;
+    delete dbBooking.createdAt;
+    delete dbBooking.dayLabel;
+    delete dbBooking.inProgress;
     
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.BOOKINGS)
@@ -79,6 +83,7 @@ async function addBooking(booking) {
     if (result) {
       result.dayKey = result.daykey;
       result.timeSlot = result.timeslot;
+      result.createdAt = result.created_at;
     }
     return result;
   } catch (error) {
@@ -262,7 +267,13 @@ async function getAllJournalEntries() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // تحويل من صيغة قاعدة البيانات إلى صيغة التطبيق
+    return (data || []).map(j => ({
+      ...j,
+      msg: j.action,
+      ts: j.timestamp
+    }));
   } catch (error) {
     console.error('خطأ في جلب السجل:', error);
     return [];
@@ -271,13 +282,26 @@ async function getAllJournalEntries() {
 
 async function addJournalEntry(entry) {
   try {
+    // تحويل من صيغة التطبيق إلى صيغة قاعدة البيانات
+    const dbEntry = {
+      id: entry.id,
+      action: entry.msg || entry.action,
+      timestamp: entry.ts || entry.timestamp
+    };
+    
     const { data, error } = await supabaseClient
       .from(SUPABASE_CONFIG.tables.JOURNAL)
-      .insert([entry])
+      .insert([dbEntry])
       .select();
 
     if (error) throw error;
-    return data ? data[0] : null;
+    
+    const result = data ? data[0] : null;
+    if (result) {
+      result.msg = result.action;
+      result.ts = result.timestamp;
+    }
+    return result;
   } catch (error) {
     console.error('خطأ في إضافة مدخل للسجل:', error);
     throw error;

@@ -4,6 +4,10 @@
 This project is a professional hair salon booking management system designed with a modern user interface and interactive 3D background animations. It provides a public booking interface, an announcements page, and a comprehensive admin panel (bookings visible only to admin). The system is designed for a single-salon operation, focusing on efficient appointment management, client-driven day selection, and a visually engaging user experience. The business vision is to offer a streamlined, visually appealing, and highly functional booking solution for hair salons, enhancing both client interaction and administrative efficiency.
 
 ## Recent Major Updates (October 2025)
+- **Fixed Supabase Data Sync** (October 20, 2025): Fixed field mapping issues between app and database
+  - Fixed bookings: removed unsupported fields (createdAt, dayLabel, inProgress) before insert
+  - Fixed journal: convert msg→action and ts→timestamp for database compatibility
+  - Bookings now properly save to Supabase and appear in admin panel
 - **Removed Public Bookings List** (October 20, 2025): Removed "Liste" link from navigation menu - bookings now only visible in admin panel for privacy
 - **Complete Supabase Integration** (October 19, 2025): Full cloud database integration with automated synchronization
   - Created `supabase-config.js`, `supabase-client.js`, and updated `data-layer.js` for Supabase
